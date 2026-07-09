@@ -1,0 +1,185 @@
+{
+  "admin": {
+    "password": "kxrgx"
+  },
+  "seo": {
+    "title": "KXRGX | Müzisyen & Producer",
+    "description": "KXRGX — alternatif ve elektronik prodüksiyonlar üreten müzisyen ve producer."
+  },
+  "brand": "KXRGX",
+  "nav": {
+    "menuLabel": "İndeks",
+    "items": [
+      { "num": "01", "label": "Hakkında", "href": "#about" },
+      { "num": "02", "label": "Seçili Projeler", "href": "#works" },
+      { "num": "03", "label": "Hizmetler", "href": "#capabilities" },
+      { "num": "04", "label": "Süreç", "href": "#process" },
+      { "num": "05", "label": "Arşiv", "href": "#archive" },
+      { "num": "06", "label": "İletişim", "href": "#commission" }
+    ]
+  },
+  "hero": {
+    "meta": "Müzisyen / Producer · Katalog 001",
+    "title": "KXRGX",
+    "subtitle": "Müzisyen / Producer",
+    "copy": "Karanlık atmosferler, deneysel dokular ve modern ritimler üzerine kurulu özgün prodüksiyonlar.",
+    "playButton": "Projeleri Dinle",
+    "portraitTop": "/portrait_top.png",
+    "portraitBottom": "/portrait_bottom.png"
+  },
+  "marquee": [
+    "KXRGX",
+    "Müzisyen / Producer",
+    "Portfolyo 2025 / 2026",
+    "Karanlık Atmosfer / Modern Ritim",
+    "İşbirliklerine Açık"
+  ],
+  "indexStrip": ["N — 01", "Katalog 2025 / 2026", "Baskı 001", "Yayında"],
+  "about": {
+    "sectionLabel": "01 Hakkında / Manifesto",
+    "folio": "s. 014",
+    "titleLine1": "Alternatif sesler",
+    "titleItalic": "karanlık atmosferler",
+    "titleLine3": "üzerine inşa",
+    "dropCap": "K",
+    "lede": "XRGX, modern prodüksiyon tekniklerini alternatif müzik, hip-hop ve elektronik dokularla birleştiren bir müzisyen ve producer'dır.",
+    "paragraph": "Ses tasarımı, atmosferik düzenlemeler ve güçlü ritmik yapı üzerine kurduğu işleriyle bağımsız sahnede kendine özgü bir çizgi oluşturur.",
+    "meta": [
+      { "label": "Sınıf", "value": "Müzisyen & Producer" },
+      { "label": "Köken", "value": "İstanbul" },
+      { "label": "Odak", "value": "Prodüksiyon · Beat · Ses Tasarımı" },
+      { "label": "Durum", "value": "Çevrimiçi · İşbirliklerine açık", "statusDot": true },
+      { "label": "Birlikte Çalıştığı İsimler", "value": "Gökhan Türkmen · Aga B" }
+    ]
+  },
+  "works": {
+    "sectionLabel": "02 Seçili Projeler",
+    "folio": "s. 029",
+    "title": "Seçili Projeler",
+    "projects": [
+      {
+        "badge": "AG",
+        "title": "AGAB — Magnolia Albümü",
+        "type": "Albüm",
+        "artist": "AGAB",
+        "description": "AGAB ile geliştirilen Magnolia albümünde prodüksiyon, aranje ve atmosferik düzenleme.",
+        "tags": ["Albüm", "Prodüksiyon", "İşbirliği"],
+        "contour": "contour-ellipses",
+        "image": "/projects/agab-magnolia.jpg",
+        "audio": "/music/agab-magnolia.mp3"
+      },
+      {
+        "badge": "GT",
+        "title": "Gökhan Türkmen — Dans Et",
+        "type": "Single",
+        "artist": "Gökhan Türkmen",
+        "description": "Gökhan Türkmen ile Dans Et single'ında modern prodüksiyon ve ritmik düzenleme.",
+        "tags": ["Single", "Prodüksiyon", "Pop"],
+        "contour": "contour-flow",
+        "image": "/projects/gokhan-dans-et.jpg",
+        "audio": "/music/gokhan-dans-et.mp3"
+      },
+      {
+        "badge": "2K",
+        "title": "2K44 — Ft. Vlim, Sosa, Lask, Mado, Esat",
+        "type": "Single",
+        "artist": "2K44",
+        "description": "Vlim, Sosa, Lask, Mado ve Esat ile 2K44 single'ında çoklu sanatçı prodüksiyonu.",
+        "tags": ["Single", "İşbirliği", "Hip-Hop"],
+        "contour": "contour-grid",
+        "image": "/projects/2k44.jpg",
+        "audio": "/music/2k44.mp3"
+      }
+    ]
+  },
+  "capabilities": {
+    "sectionLabel": "03 Hizmetler",
+    "folio": "s. 041",
+    "title": "Hizmetler",
+    "items": [
+      {
+        "idx": "↳ 01",
+        "title": "Müzik Prodüksiyonu",
+        "body": "Alternatif, elektronik ve hip-hop etkili tam prodüksiyon süreçleri.",
+        "footer": "Konsept · Kayıt · Düzenleme"
+      },
+      {
+        "idx": "↳ 02",
+        "title": "Beat & Aranje",
+        "body": "Özgün ritim yapıları, katmanlı aranjeler ve sanatçıya özel beat üretimi.",
+        "footer": "Ritim · Yapı · Katman"
+      },
+      {
+        "idx": "↳ 03",
+        "title": "Ses Tasarımı",
+        "body": "Atmosferik dokular, deneysel ses katmanları ve karakterli tonal paletler.",
+        "footer": "Doku · Atmosfer · Efekt"
+      },
+      {
+        "idx": "↳ 04",
+        "title": "Sanatçı İşbirlikleri",
+        "body": "Mix ve mastering yönlendirmesiyle birlikte, sanatçı odaklı ortak prodüksiyon süreçleri.",
+        "footer": "Mix · Mastering · İşbirliği"
+      }
+    ]
+  },
+  "process": {
+    "sectionLabel": "04 Süreç",
+    "folio": "s. 057",
+    "title": "Aşamalar",
+    "steps": [
+      { "num": "01", "title": "Konsept", "body": "Referanslar, atmosfer ve ritmik hedefler netleştirilir." },
+      { "num": "02", "title": "Üretim", "body": "Beat, ses tasarımı ve temel düzenleme aynı çizgide ilerler." },
+      { "num": "03", "title": "Düzenleme", "body": "Katmanlar, dinamik ve yapı son forma getirilir." },
+      { "num": "04", "title": "Mix", "body": "Parça, yayına hazır netlik ve derinlikle tamamlanır." }
+    ]
+  },
+  "archive": {
+    "sectionLabel": "05 Deneyler / Arşiv",
+    "folio": "s. 068",
+    "title": "Çalışmalar",
+    "linkText": "Projeleri dinle ↗",
+    "linkHref": "#works",
+    "studies": [
+      { "pattern": "lines", "number": "Çalışma #001", "tag": "Doku · Ritim" },
+      { "pattern": "rings", "number": "Çalışma #002", "tag": "Sinyal · Atmosfer" },
+      { "pattern": "grid", "number": "Çalışma #003", "tag": "Yapı · Alan" },
+      { "pattern": "waves", "number": "Çalışma #004", "tag": "Akış · Düzen" },
+      { "pattern": "diag", "number": "Çalışma #005", "tag": "Kontrast · Hareket" },
+      { "pattern": "dots", "number": "Çalışma #006", "tag": "Yüzey · Arşiv" }
+    ]
+  },
+  "cta": {
+    "sectionLabel": "06 İletişim / Komisyon",
+    "folio": "s. 080",
+    "titleLine1": "Yeni bir proje",
+    "titleItalic": "birlikte üretelim",
+    "body": "Prodüksiyon, beat veya işbirliği için KXRGX ile doğrudan iletişime geçin.",
+    "buttonText": "İletişime Geç",
+    "email": "iletisim@kxrgx.com",
+    "location": "İstanbul · Uzaktan"
+  },
+  "footer": {
+    "brand": "KXRGX",
+    "tagline": "Alternatif sesler, karanlık atmosferler ve modern prodüksiyonlar.",
+    "lockup": "KXRGX",
+    "columns": [
+      { "title": "İndeks", "links": [{ "label": "Hakkında", "href": "#about" }, { "label": "Projeler", "href": "#works" }] },
+      { "title": "Kanallar", "links": [{ "label": "Spotify", "href": "#" }, { "label": "SoundCloud", "href": "#" }] },
+      { "title": "İletişim", "links": [{ "label": "E-posta", "href": "mailto:iletisim@kxrgx.com" }, { "label": "Komisyon", "href": "#commission" }] },
+      { "title": "Katalog No.", "links": [{ "label": "Baskı 001", "href": "#" }, { "label": "2025 / 2026", "href": "#" }] }
+    ]
+  },
+  "music": {
+    "homepage": {
+      "src": "/music/home.mp3",
+      "title": "KXRGX"
+    }
+  },
+  "theme": {
+    "bg": "#1a0f2e",
+    "bgSoft": "#261840",
+    "bgDark": "#0f081c",
+    "accent": "#9b6dff"
+  }
+}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KXRGX Admin</title>
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <div id="login" class="admin-login">
+      <form id="login-form" class="admin-card">
+        <h1>KXRGX Admin</h1>
+        <p>Site içeriğini düzenlemek için giriş yapın.</p>
+        <label>
+          Şifre
+          <input type="password" id="login-password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn-primary">Giriş</button>
+        <p id="login-error" class="admin-error" hidden>Yanlış şifre.</p>
+        <p class="admin-hint">Varsayılan şifre: <strong>kxrgx</strong></p>
+        <button type="button" id="clear-cache-btn" class="btn-ghost">Önbelleği temizle</button>
+        <a href="/" class="admin-back">← Siteye dön</a>
+      </form>
+    </div>
+
+    <div id="app" class="admin-app is-hidden">
+      <header class="admin-header">
+        <div>
+          <h1>KXRGX Admin</h1>
+          <p>İçerik paneli</p>
+        </div>
+        <div class="admin-actions">
+          <a href="/" target="_blank" rel="noopener" class="btn-ghost">Siteyi Gör</a>
+          <button type="button" id="export-btn" class="btn-ghost">Dışa Aktar</button>
+          <button type="button" id="import-btn" class="btn-ghost">İçe Aktar</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+          <button type="button" id="reset-btn" class="btn-ghost">Sıfırla</button>
+          <button type="button" id="save-btn" class="btn-primary">Kaydet</button>
+          <button type="button" id="logout-btn" class="btn-ghost">Çıkış</button>
+        </div>
+      </header>
+
+      <nav class="admin-tabs" id="tabs"></nav>
+      <main class="admin-main" id="panels"></main>
+    </div>
+
+    <div id="toast" class="admin-toast" hidden></div>
+
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

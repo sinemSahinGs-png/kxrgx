@@ -977,6 +977,21 @@ figcaption {
   color: rgba(244, 241, 234, 0.95);
 }
 
+.footer-admin {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0.45;
+}
+
+.footer-admin:hover {
+  opacity: 0.85;
+}
+
 [data-reveal] {
   opacity: 0;
   transform: translateY(28px);

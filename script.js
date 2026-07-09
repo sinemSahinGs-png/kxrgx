@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { loadContent } from './content-store.js';
 import { vertexShader, fluidFragmentShader, displayFragmentShader } from './shaders.js';
 
 const CONFIG = {
@@ -167,8 +168,14 @@ function loadPortrait(path, sizeUniform, textureUniform) {
   img.src = path;
 }
 
-loadPortrait('/portrait_top.png', displayMaterial.uniforms.uTopTextureSize, displayMaterial.uniforms.uTopTexture);
-loadPortrait('/portrait_bottom.png', displayMaterial.uniforms.uBottomTextureSize, displayMaterial.uniforms.uBottomTexture);
+function loadHeroPortraits(hero) {
+  if (!hero) return;
+  loadPortrait(hero.portraitTop, displayMaterial.uniforms.uTopTextureSize, displayMaterial.uniforms.uTopTexture);
+  loadPortrait(hero.portraitBottom, displayMaterial.uniforms.uBottomTextureSize, displayMaterial.uniforms.uBottomTexture);
+}
+
+loadContent().then((content) => loadHeroPortraits(content.hero));
+window.addEventListener('site-content-ready', (e) => loadHeroPortraits(e.detail.hero));
 
 canvas.style.touchAction = 'none';
 

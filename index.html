@@ -186,6 +186,7 @@
         <div><h4>Katalog No.</h4><a href="#">Baskı 001</a><a href="#">2025 / 2026</a></div>
       </div>
       <div class="footer-lockup">KXRGX</div>
+      <a href="/admin.html" class="footer-admin">Admin</a>
     </footer>
 
     <div class="music-player" hidden>
@@ -203,7 +204,6 @@
         const root = document.documentElement;
         const panel = document.querySelector('.site-menu');
         const button = document.querySelector('.menu-toggle');
-        const links = panel.querySelectorAll('a');
         let closeTimer;
 
         function openMenu() {
@@ -233,7 +233,9 @@
           if (e.key === 'Escape' && panel.classList.contains('is-open')) closeMenu();
         });
 
-        links.forEach((link) => link.addEventListener('click', closeMenu));
+        panel.addEventListener('click', (e) => {
+          if (e.target.closest('a')) closeMenu();
+        });
       })();
     </script>
   </body>
