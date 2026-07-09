@@ -1,0 +1,13 @@
+{
+  "name": "synth-editorial-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "three": "latest",
+    "vite": "^7.3.6"
+  }
+}
