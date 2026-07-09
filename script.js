@@ -34,11 +34,20 @@ const scene = new THREE.Scene();
 const simScene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
+function getRenderTargetType(webglRenderer) {
+  const caps = webglRenderer.capabilities;
+  if (caps.isWebGL2) return THREE.HalfFloatType;
+  const gl = webglRenderer.getContext();
+  if (gl.getExtension('OES_texture_half_float')) return THREE.HalfFloatType;
+  if (gl.getExtension('OES_texture_float')) return THREE.FloatType;
+  return THREE.UnsignedByteType;
+}
+
 const renderTargetOptions = {
   minFilter: THREE.LinearFilter,
   magFilter: THREE.LinearFilter,
   format: THREE.RGBAFormat,
-  type: THREE.FloatType,
+  type: getRenderTargetType(renderer),
   depthBuffer: false,
   stencilBuffer: false,
 };
@@ -61,6 +70,7 @@ const prevMouse = new THREE.Vector2(0.5, 0.5);
 const autoMouse = new THREE.Vector2(0.5, 0.5);
 const prevAutoMouse = new THREE.Vector2(0.5, 0.5);
 let isMoving = false;
+let isTouching = false;
 let lastMoveTime = 0;
 
 function makePlaceholderTexture(colorHex) {
@@ -160,11 +170,13 @@ function loadPortrait(path, sizeUniform, textureUniform) {
 loadPortrait('/portrait_top.png', displayMaterial.uniforms.uTopTextureSize, displayMaterial.uniforms.uTopTexture);
 loadPortrait('/portrait_bottom.png', displayMaterial.uniforms.uBottomTextureSize, displayMaterial.uniforms.uBottomTexture);
 
+canvas.style.touchAction = 'none';
+
 function pointerToCanvas(clientX, clientY, now) {
   const rect = canvas.getBoundingClientRect();
   const inside = clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
   if (!inside) {
-    isMoving = false;
+    if (!isTouching) isMoving = false;
     return;
   }
   prevMouse.copy(mouse);
@@ -175,25 +187,39 @@ function pointerToCanvas(clientX, clientY, now) {
 }
 
 window.addEventListener('mousemove', (e) => {
+  if (isTouching) return;
   pointerToCanvas(e.clientX, e.clientY, performance.now());
 });
 
 canvas.addEventListener(
-  'touchmove',
+  'touchstart',
   (e) => {
-    if (!e.touches || !e.touches[0]) return;
+    if (!e.touches?.[0]) return;
     const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const inside =
-      touch.clientX >= rect.left &&
-      touch.clientX <= rect.right &&
-      touch.clientY >= rect.top &&
-      touch.clientY <= rect.bottom;
-    if (inside) e.preventDefault();
+    e.preventDefault();
+    isTouching = true;
     pointerToCanvas(touch.clientX, touch.clientY, performance.now());
   },
   { passive: false }
 );
+
+canvas.addEventListener(
+  'touchmove',
+  (e) => {
+    if (!e.touches?.[0]) return;
+    const touch = e.touches[0];
+    e.preventDefault();
+    pointerToCanvas(touch.clientX, touch.clientY, performance.now());
+  },
+  { passive: false }
+);
+
+function endTouch() {
+  isTouching = false;
+}
+
+canvas.addEventListener('touchend', endTouch, { passive: true });
+canvas.addEventListener('touchcancel', endTouch, { passive: true });
 
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -205,7 +231,7 @@ function animate() {
   requestAnimationFrame(animate);
 
   const now = performance.now();
-  if (isMoving && now - lastMoveTime > CONFIG.stopAfterMs) isMoving = false;
+  if (!isTouching && isMoving && now - lastMoveTime > CONFIG.stopAfterMs) isMoving = false;
   const idleTime = now - lastMoveTime;
   const autoActive = idleTime > CONFIG.idleThresholdMs;
 
