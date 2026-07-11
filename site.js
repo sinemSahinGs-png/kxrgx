@@ -178,11 +178,20 @@ function applyArchive(archive) {
   const grid = section.querySelector('.archive-grid');
   if (grid) {
     grid.innerHTML = archive.studies
-      .map(
-        (s) =>
-          `<figure data-pattern="${esc(s.pattern)}"><div class="study-visual"></div><figcaption><span>${esc(s.number)}</span><span>${esc(s.tag)}</span></figcaption></figure>`
-      )
+      .map((s) => {
+        const image = s.image
+          ? `<img class="study-visual-img" src="${esc(s.image)}" alt="${esc(s.number)}" loading="lazy" />`
+          : '';
+        return `<figure data-pattern="${esc(s.pattern || 'lines')}" class="${s.image ? 'has-image' : ''}"><div class="study-visual">${image}</div><figcaption><span>${esc(s.number)}</span><span>${esc(s.tag)}</span></figcaption></figure>`;
+      })
       .join('');
+
+    grid.querySelectorAll('.study-visual-img').forEach((img) => {
+      img.addEventListener('error', () => {
+        img.remove();
+        img.closest('figure')?.classList.remove('has-image');
+      });
+    });
   }
   const link = section.querySelector('.archive-link');
   if (link) {

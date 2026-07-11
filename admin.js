@@ -20,7 +20,7 @@ const TABS = [
   { id: 'works', label: 'Projeler' },
   { id: 'capabilities', label: 'Hizmetler' },
   { id: 'process', label: 'Süreç' },
-  { id: 'archive', label: 'Arşiv' },
+  { id: 'archive', label: 'Çalışmalar' },
   { id: 'cta', label: 'İletişim' },
   { id: 'footer', label: 'Footer' },
   { id: 'music', label: 'Müzik' },
@@ -59,6 +59,57 @@ function showToast(msg) {
   showToast._t = setTimeout(() => {
     toastEl.hidden = true;
   }, 3200);
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadImageFile(file, folder = 'projects') {
+  const dataUrl = await fileToDataUrl(file);
+  try {
+    const res = await fetch('./api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        folder,
+        filename: file.name,
+        data: dataUrl,
+      }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.ok && json.path) return json.path;
+    }
+  } catch {
+    /* API yoksa data URL kullan */
+  }
+  return dataUrl;
+}
+
+function imageUploadBlock({ preview, pathValue, folder, fieldAttr, index }) {
+  const hasPreview = Boolean(preview || pathValue);
+  const src = preview || pathValue || '';
+  return `
+    <div class="image-upload" style="grid-column:1/-1">
+      <div class="image-upload-preview ${hasPreview ? 'has-image' : ''}">
+        ${hasPreview ? `<img src="${esc(src)}" alt="Önizleme" />` : '<span>Görsel yok</span>'}
+      </div>
+      <div class="image-upload-actions">
+        <label class="btn-ghost image-upload-btn">
+          Görsel yükle
+          <input type="file" accept="image/*" data-upload-folder="${folder}" data-upload-target="${fieldAttr}" data-upload-index="${index}" hidden />
+        </label>
+        ${hasPreview ? `<button type="button" class="btn-ghost" data-clear-image="${fieldAttr}" data-clear-index="${index}">Kaldır</button>` : ''}
+        <input type="hidden" ${fieldAttr}="image" value="${esc(pathValue || '')}" />
+        <span class="image-upload-hint">JPG, PNG, WEBP</span>
+      </div>
+    </div>`;
 }
 
 function field(label, key, value, type = 'text', rows = 3) {
@@ -207,7 +258,7 @@ function renderProjects() {
         <label>Başlık<input data-project-field="title" value="${esc(p.title)}" /></label>
         <label>Tür<input data-project-field="type" value="${esc(p.type)}" /></label>
         <label>Sanatçı<input data-project-field="artist" value="${esc(p.artist)}" /></label>
-        <label>Görsel yolu<input data-project-field="image" value="${esc(p.image)}" /></label>
+        ${imageUploadBlock({ pathValue: p.image, folder: 'projects', fieldAttr: 'data-project-field', index: i })}
         <label>Müzik yolu<input data-project-field="audio" value="${esc(p.audio)}" /></label>
         <label>Kontur<select data-project-field="contour">
           <option value="contour-ellipses" ${p.contour === 'contour-ellipses' ? 'selected' : ''}>Ellipses</option>
@@ -290,7 +341,7 @@ function renderProcessList() {
 function renderArchive() {
   return `
     <section class="admin-panel" data-panel="archive">
-      <h2>Arşiv</h2>
+      <h2>Çalışmalar</h2>
       <div class="admin-grid admin-grid-2">
         ${field('Bölüm etiketi', 'archive.sectionLabel', content.archive.sectionLabel)}
         ${field('Sayfa no.', 'archive.folio', content.archive.folio)}
@@ -313,9 +364,10 @@ function renderArchiveList() {
     <div class="admin-card-block" data-study="${i}">
       <div class="admin-card-head"><h3>Çalışma ${i + 1}</h3><button type="button" class="btn-ghost" data-remove-study="${i}">Sil</button></div>
       <div class="admin-grid admin-grid-2">
-        <label>Desen<select data-study-field="pattern">${patterns.map((p) => `<option value="${p}" ${s.pattern === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
         <label>Numara<input data-study-field="number" value="${esc(s.number)}" /></label>
         <label>Etiket<input data-study-field="tag" value="${esc(s.tag)}" /></label>
+        <label>Yedek desen<select data-study-field="pattern">${patterns.map((p) => `<option value="${p}" ${s.pattern === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
+        ${imageUploadBlock({ pathValue: s.image || '', folder: 'archive', fieldAttr: 'data-study-field', index: i })}
       </div>
     </div>`
     )
@@ -442,7 +494,16 @@ function renderTabs() {
 
 function switchTab(id) {
   document.querySelectorAll('.admin-tab').forEach((btn) => btn.classList.toggle('is-active', btn.dataset.tab === id));
-  document.querySelectorAll('.admin-panel').forEach((panel) => panel.classList.toggle('is-active', panel.dataset.panel === id));
+  document.querySelectorAll('.admin-panel').forEach((panel) => {
+    const active = panel.dataset.panel === id;
+    panel.classList.toggle('is-active', active);
+    if (active) {
+      panel.style.animation = 'none';
+      // force reflow for re-trigger
+      void panel.offsetWidth;
+      panel.style.animation = '';
+    }
+  });
 }
 
 function readListFields() {
@@ -495,6 +556,7 @@ function readListFields() {
       pattern: block.querySelector('[data-study-field="pattern"]').value,
       number: block.querySelector('[data-study-field="number"]').value,
       tag: block.querySelector('[data-study-field="tag"]').value,
+      image: block.querySelector('[data-study-field="image"]')?.value || '',
     };
   });
 
@@ -583,13 +645,25 @@ function bindDynamicActions() {
     }
     if (t.matches('[data-add-study]')) {
       gatherContentFromForm();
-      content.archive.studies.push({ pattern: 'lines', number: 'Çalışma #000', tag: 'Etiket' });
+      content.archive.studies.push({ pattern: 'lines', number: 'Çalışma #000', tag: 'Etiket', image: '' });
       renderArchiveList();
     }
     if (t.matches('[data-remove-study]')) {
       gatherContentFromForm();
       content.archive.studies.splice(Number(t.dataset.removeStudy), 1);
       renderArchiveList();
+    }
+    if (t.matches('[data-clear-image]')) {
+      gatherContentFromForm();
+      const index = Number(t.dataset.clearIndex);
+      const target = t.dataset.clearImage;
+      if (target === 'data-project-field') {
+        content.works.projects[index].image = '';
+        renderProjects();
+      } else if (target === 'data-study-field') {
+        content.archive.studies[index].image = '';
+        renderArchiveList();
+      }
     }
     if (t.matches('[data-add-footer-col]')) {
       gatherContentFromForm();
@@ -600,6 +674,33 @@ function bindDynamicActions() {
       gatherContentFromForm();
       content.footer.columns.splice(Number(t.dataset.removeFooterCol), 1);
       renderFooterColumns();
+    }
+  });
+
+  panelsEl.addEventListener('change', async (e) => {
+    const input = e.target.closest('input[type="file"][data-upload-target]');
+    if (!input || !input.files?.[0]) return;
+    const file = input.files[0];
+    const index = Number(input.dataset.uploadIndex);
+    const folder = input.dataset.uploadFolder || 'projects';
+    const target = input.dataset.uploadTarget;
+    showToast('Görsel yükleniyor...');
+    try {
+      gatherContentFromForm();
+      const pathValue = await uploadImageFile(file, folder);
+      if (target === 'data-project-field') {
+        content.works.projects[index].image = pathValue;
+        renderProjects();
+      } else if (target === 'data-study-field') {
+        content.archive.studies[index].image = pathValue;
+        renderArchiveList();
+      }
+      showToast('Görsel eklendi. Kaydetmeyi unutma.');
+    } catch (error) {
+      console.error(error);
+      showToast('Görsel yüklenemedi.');
+    } finally {
+      input.value = '';
     }
   });
 }
@@ -679,7 +780,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   try {
     const data = await loadContent();
     if (pass !== getAdminPassword(data)) {
-      err.textContent = 'Yanlış şifre. Varsayılan: kxrgx';
+      err.textContent = 'Yanlış şifre.';
       err.hidden = false;
       return;
     }
@@ -705,12 +806,3 @@ if (isAdminAuthed()) {
 } else {
   showLogin();
 }
-
-document.getElementById('clear-cache-btn')?.addEventListener('click', () => {
-  clearStoredContent();
-  setAdminAuthed(false);
-  const err = document.getElementById('login-error');
-  err.textContent = 'Önbellek temizlendi. Şifre: kxrgx';
-  err.hidden = false;
-  document.getElementById('login-password').value = '';
-});

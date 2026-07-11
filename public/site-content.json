@@ -1,6 +1,6 @@
 {
   "admin": {
-    "password": "kxrgx"
+    "password": "Gülpembe3169"
   },
   "seo": {
     "title": "KXRGX | Müzisyen & Producer",
@@ -141,12 +141,12 @@
     "linkText": "Projeleri dinle ↗",
     "linkHref": "#works",
     "studies": [
-      { "pattern": "lines", "number": "Çalışma #001", "tag": "Doku · Ritim" },
-      { "pattern": "rings", "number": "Çalışma #002", "tag": "Sinyal · Atmosfer" },
-      { "pattern": "grid", "number": "Çalışma #003", "tag": "Yapı · Alan" },
-      { "pattern": "waves", "number": "Çalışma #004", "tag": "Akış · Düzen" },
-      { "pattern": "diag", "number": "Çalışma #005", "tag": "Kontrast · Hareket" },
-      { "pattern": "dots", "number": "Çalışma #006", "tag": "Yüzey · Arşiv" }
+      { "pattern": "lines", "number": "Çalışma #001", "tag": "Doku · Ritim", "image": "" },
+      { "pattern": "rings", "number": "Çalışma #002", "tag": "Sinyal · Atmosfer", "image": "" },
+      { "pattern": "grid", "number": "Çalışma #003", "tag": "Yapı · Alan", "image": "" },
+      { "pattern": "waves", "number": "Çalışma #004", "tag": "Akış · Düzen", "image": "" },
+      { "pattern": "diag", "number": "Çalışma #005", "tag": "Kontrast · Hareket", "image": "" },
+      { "pattern": "dots", "number": "Çalışma #006", "tag": "Yüzey · Arşiv", "image": "" }
     ]
   },
   "cta": {

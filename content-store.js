@@ -26,7 +26,8 @@ function deepMergeDefaults(base, override) {
 
 export async function fetchDefaultContent() {
   if (cachedDefault) return cloneData(cachedDefault);
-  const res = await fetch('/site-content.json');
+  const base = import.meta.env.BASE_URL || './';
+  const res = await fetch(`${base}site-content.json`);
   if (!res.ok) throw new Error('site-content.json yüklenemedi');
   cachedDefault = await res.json();
   return cloneData(cachedDefault);
@@ -35,20 +36,27 @@ export async function fetchDefaultContent() {
 export async function loadContent() {
   const defaults = await fetchDefaultContent();
   const stored = localStorage.getItem(STORAGE_KEY);
+  let content = defaults;
   if (stored) {
     try {
-      return deepMergeDefaults(defaults, JSON.parse(stored));
+      content = deepMergeDefaults(defaults, JSON.parse(stored));
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
   }
-  return defaults;
+  if (!content.admin) content.admin = {};
+  if (!content.admin.password || content.admin.password === 'kxrgx') {
+    content.admin.password = defaults.admin?.password || 'Gülpembe3169';
+  }
+  return content;
 }
 
 export function getAdminPassword(content) {
   const password = content?.admin?.password;
-  if (typeof password === 'string' && password.length > 0) return password;
-  return 'kxrgx';
+  if (typeof password === 'string' && password.length > 0 && password !== 'kxrgx') {
+    return password;
+  }
+  return 'Gülpembe3169';
 }
 
 export async function saveContent(content) {
@@ -56,7 +64,7 @@ export async function saveContent(content) {
   localStorage.setItem(STORAGE_KEY, json);
 
   try {
-    const res = await fetch('/api/content', {
+    const res = await fetch('./api/content', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: json,
