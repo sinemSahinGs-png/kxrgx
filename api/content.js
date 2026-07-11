@@ -1,13 +1,15 @@
-import { put, get } from '@vercel/blob';
-import { json, readBody, getFallbackPassword, siteOrigin, streamToString } from './_http.js';
+import { put, list } from '@vercel/blob';
+import { json, readBody, getFallbackPassword, siteOrigin } from './_http.js';
 
 const CONTENT_PATHNAME = 'kxrgx/site-content.json';
 
 async function readBlobContent() {
-  const result = await get(CONTENT_PATHNAME, { access: 'private' });
-  if (!result || result.statusCode !== 200 || !result.stream) return null;
-  const text = await streamToString(result.stream);
-  return JSON.parse(text);
+  const { blobs } = await list({ prefix: 'kxrgx/site-content', limit: 20 });
+  const hit = blobs.find((b) => b.pathname === CONTENT_PATHNAME) || blobs[0];
+  if (!hit?.url) return null;
+  const res = await fetch(hit.url, { cache: 'no-store' });
+  if (!res.ok) return null;
+  return res.json();
 }
 
 async function readSeedContent(req) {
@@ -22,14 +24,14 @@ async function loadContent(req) {
     const fromBlob = await readBlobContent();
     if (fromBlob) return fromBlob;
   } catch {
-    /* blob yoksa veya OIDC localde yoksa seed'e düş */
+    /* blob yoksa seed'e düş */
   }
   return readSeedContent(req);
 }
 
 async function saveContent(content) {
   await put(CONTENT_PATHNAME, `${JSON.stringify(content, null, 2)}\n`, {
-    access: 'private',
+    access: 'public',
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',

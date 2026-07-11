@@ -60,7 +60,7 @@ export default async function handler(req, res) {
 
     const buffer = Buffer.from(data, 'base64');
     const blob = await put(`kxrgx/${folder}/${filename}`, buffer, {
-      access: 'private',
+      access: 'public',
       contentType:
         ext === '.png'
           ? 'image/png'
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
 
     return json(res, 200, {
       ok: true,
-      path: `/api/media?path=${encodeURIComponent(blob.pathname)}`,
+      path: blob.url,
       pathname: blob.pathname,
     });
   } catch (error) {
