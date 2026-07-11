@@ -1,19 +1,43 @@
-import {
-  getGithubConfig,
-  getGithubFile,
-  putGithubFile,
-  decodeGithubContent,
-  toBase64,
-  readBody,
-  json,
-  getFallbackPassword,
-} from './_github.js';
+import { put, list } from '@vercel/blob';
+import { json, readBody, getFallbackPassword, assertBlobToken, siteOrigin } from './_http.js';
 
-async function loadRemoteContent() {
-  const { contentPath } = getGithubConfig();
-  const file = await getGithubFile(contentPath);
-  const content = JSON.parse(decodeGithubContent(file));
-  return { content, sha: file.sha };
+const CONTENT_PATHNAME = 'kxrgx/site-content.json';
+
+async function readBlobContent() {
+  assertBlobToken();
+  const { blobs } = await list({ prefix: 'kxrgx/site-content', limit: 20 });
+  const hit = blobs.find((b) => b.pathname === CONTENT_PATHNAME) || blobs[0];
+  if (!hit?.url) return null;
+  const res = await fetch(hit.url, { cache: 'no-store' });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function readSeedContent(req) {
+  const origin = siteOrigin(req);
+  const res = await fetch(`${origin}/site-content.json`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Varsayılan içerik okunamadı');
+  return res.json();
+}
+
+async function loadContent(req) {
+  try {
+    const fromBlob = await readBlobContent();
+    if (fromBlob) return fromBlob;
+  } catch (error) {
+    if (error.message?.includes('BLOB_READ_WRITE_TOKEN')) throw error;
+  }
+  return readSeedContent(req);
+}
+
+async function saveContent(content) {
+  assertBlobToken();
+  await put(CONTENT_PATHNAME, `${JSON.stringify(content, null, 2)}\n`, {
+    access: 'public',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: 'application/json; charset=utf-8',
+  });
 }
 
 export default async function handler(req, res) {
@@ -28,7 +52,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const { content } = await loadRemoteContent();
+      const content = await loadContent(req);
       return json(res, 200, content);
     }
 
@@ -38,7 +62,7 @@ export default async function handler(req, res) {
       const incoming = parsed.content || parsed;
       const password = parsed.password || req.headers['x-admin-password'] || '';
 
-      const { content: current, sha } = await loadRemoteContent();
+      const current = await loadContent(req);
       const expected = current?.admin?.password || getFallbackPassword();
       if (!password || password !== expected) {
         return json(res, 401, { ok: false, error: 'Yetkisiz' });
@@ -52,13 +76,7 @@ export default async function handler(req, res) {
       if (!next.admin) next.admin = {};
       if (!next.admin.password) next.admin.password = expected;
 
-      const { contentPath } = getGithubConfig();
-      await putGithubFile(contentPath, {
-        contentBase64: toBase64(JSON.stringify(next, null, 2) + '\n'),
-        message: `content: admin panel update ${new Date().toISOString()}`,
-        sha,
-      });
-
+      await saveContent(next);
       return json(res, 200, { ok: true, persisted: true });
     }
 

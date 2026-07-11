@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vercel/blob": "^2.6.1",
     "three": "latest",
     "vite": "^7.3.6"
   }

@@ -1,23 +1,18 @@
-import {
-  getGithubFile,
-  putGithubFile,
-  readBody,
-  json,
-  publicFileUrl,
-  getFallbackPassword,
-  getGithubConfig,
-  decodeGithubContent,
-} from './_github.js';
+import { put } from '@vercel/blob';
+import { json, readBody, getFallbackPassword, assertBlobToken, siteOrigin } from './_http.js';
 
-async function expectedPassword() {
+async function expectedPassword(req) {
   try {
-    const { contentPath } = getGithubConfig();
-    const file = await getGithubFile(contentPath);
-    const content = JSON.parse(decodeGithubContent(file));
-    return content?.admin?.password || getFallbackPassword();
+    const origin = siteOrigin(req);
+    const res = await fetch(`${origin}/api/content`, { cache: 'no-store' });
+    if (res.ok) {
+      const content = await res.json();
+      return content?.admin?.password || getFallbackPassword();
+    }
   } catch {
-    return getFallbackPassword();
+    /* ignore */
   }
+  return getFallbackPassword();
 }
 
 function safeFilename(name) {
@@ -44,10 +39,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    assertBlobToken();
     const raw = await readBody(req);
     const body = JSON.parse(raw || '{}');
     const password = body.password || req.headers['x-admin-password'] || '';
-    const expected = await expectedPassword();
+    const expected = await expectedPassword(req);
     if (!password || password !== expected) {
       return json(res, 401, { ok: false, error: 'Yetkisiz' });
     }
@@ -58,30 +54,27 @@ export default async function handler(req, res) {
     const ext = extMatch ? extMatch[0] : '.jpg';
     const base = safeFilename(original.replace(/\.[^.]+$/, '')) || 'image';
     const filename = `${base}-${Date.now()}${ext}`;
-    const repoPath = `public/${folder}/${filename}`;
 
     let data = String(body.data || '');
     data = data.replace(/^data:[^;]+;base64,/, '');
     if (!data) return json(res, 400, { ok: false, error: 'Dosya verisi yok' });
 
-    let sha;
-    try {
-      const existing = await getGithubFile(repoPath);
-      sha = existing.sha;
-    } catch {
-      sha = undefined;
-    }
-
-    await putGithubFile(repoPath, {
-      contentBase64: data,
-      message: `upload: ${folder}/${filename}`,
-      sha,
+    const buffer = Buffer.from(data, 'base64');
+    const blob = await put(`kxrgx/${folder}/${filename}`, buffer, {
+      access: 'public',
+      contentType:
+        ext === '.png'
+          ? 'image/png'
+          : ext === '.webp'
+            ? 'image/webp'
+            : ext === '.gif'
+              ? 'image/gif'
+              : 'image/jpeg',
     });
 
     return json(res, 200, {
       ok: true,
-      path: publicFileUrl(repoPath),
-      relativePath: `./${folder}/${filename}`,
+      path: blob.url,
     });
   } catch (error) {
     return json(res, error.status || 500, {
