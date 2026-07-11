@@ -72,14 +72,19 @@ function fileToDataUrl(file) {
 
 async function uploadImageFile(file, folder = 'projects') {
   const dataUrl = await fileToDataUrl(file);
+  const password = sessionStorage.getItem('kxrgx-admin-pass') || '';
   try {
-    const res = await fetch('./api/upload', {
+    const res = await fetch('/api/upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': password,
+      },
       body: JSON.stringify({
         folder,
         filename: file.name,
         data: dataUrl,
+        password,
       }),
     });
     if (res.ok) {
@@ -709,7 +714,8 @@ function bindStaticActions() {
   document.getElementById('save-btn').addEventListener('click', async () => {
     gatherContentFromForm();
     const result = await saveContent(content);
-    showToast(result.persisted ? 'Kaydedildi ve dosyaya yazıldı.' : 'Kaydedildi (tarayıcıda). Canlıda kalıcı olması için Dışa Aktar kullanın.');
+    if (result.persisted) showToast('Kalıcı olarak kaydedildi. Site güncellendi.');
+    else showToast(result.error || 'Kayıt başarısız. Vercel GITHUB_TOKEN ayarını kontrol et.');
   });
 
   document.getElementById('export-btn').addEventListener('click', () => {
@@ -786,7 +792,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     }
 
     err.hidden = true;
-    setAdminAuthed(true);
+    setAdminAuthed(true, pass);
     showApp();
     await bootAdmin();
     showToast('Panele hoş geldiniz.');

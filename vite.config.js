@@ -57,10 +57,11 @@ export default defineConfig({
           if (req.method === 'POST') {
             try {
               const body = await readBody(req);
-              JSON.parse(body);
-              fs.writeFileSync(filePath, body, 'utf-8');
+              const parsed = JSON.parse(body);
+              const content = parsed.content || parsed;
+              fs.writeFileSync(filePath, JSON.stringify(content, null, 2) + '\n', 'utf-8');
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ ok: true }));
+              res.end(JSON.stringify({ ok: true, persisted: true }));
             } catch {
               res.statusCode = 400;
               res.end(JSON.stringify({ ok: false, error: 'Geçersiz JSON' }));

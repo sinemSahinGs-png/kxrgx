@@ -1,5 +1,6 @@
 export const STORAGE_KEY = 'kxrgx-site-content';
 export const AUTH_KEY = 'kxrgx-admin-auth';
+export const PASS_KEY = 'kxrgx-admin-pass';
 
 let cachedDefault = null;
 
@@ -8,20 +9,9 @@ function cloneData(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function deepMergeDefaults(base, override) {
-  const out = cloneData(base);
-  if (!override || typeof override !== 'object') return out;
-
-  Object.keys(override).forEach((key) => {
-    const value = override[key];
-    if (value && typeof value === 'object' && !Array.isArray(value) && out[key] && typeof out[key] === 'object' && !Array.isArray(out[key])) {
-      out[key] = deepMergeDefaults(out[key], value);
-    } else {
-      out[key] = value;
-    }
-  });
-
-  return out;
+function apiUrl(path) {
+  if (typeof window === 'undefined') return path;
+  return new URL(path, window.location.origin).pathname;
 }
 
 export async function fetchDefaultContent() {
@@ -34,21 +24,25 @@ export async function fetchDefaultContent() {
 }
 
 export async function loadContent() {
-  const defaults = await fetchDefaultContent();
-  const stored = localStorage.getItem(STORAGE_KEY);
-  let content = defaults;
-  if (stored) {
-    try {
-      content = deepMergeDefaults(defaults, JSON.parse(stored));
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
+  try {
+    const res = await fetch(apiUrl('/api/content'), { cache: 'no-store' });
+    if (res.ok) {
+      const remote = await res.json();
+      if (remote && typeof remote === 'object' && !remote.error) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(remote));
+        return remote;
+      }
     }
+  } catch {
+    /* API yoksa fallback */
   }
-  if (!content.admin) content.admin = {};
-  if (!content.admin.password || content.admin.password === 'kxrgx') {
-    content.admin.password = defaults.admin?.password || 'Gülpembe3169';
+
+  const defaults = await fetchDefaultContent();
+  if (!defaults.admin) defaults.admin = {};
+  if (!defaults.admin.password || defaults.admin.password === 'kxrgx') {
+    defaults.admin.password = 'Gülpembe3169';
   }
-  return content;
+  return defaults;
 }
 
 export function getAdminPassword(content) {
@@ -60,25 +54,37 @@ export function getAdminPassword(content) {
 }
 
 export async function saveContent(content) {
-  const json = JSON.stringify(content, null, 2);
-  localStorage.setItem(STORAGE_KEY, json);
+  const password = sessionStorage.getItem(PASS_KEY) || '';
+  const payload = JSON.stringify({ password, content });
 
   try {
-    const res = await fetch('./api/content', {
+    const res = await fetch(apiUrl('/api/content'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: json,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': password,
+      },
+      body: payload,
     });
-    if (res.ok) return { saved: true, persisted: true };
-  } catch {
-    /* dev API yoksa localStorage yeterli */
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.ok !== false) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+      cachedDefault = cloneData(content);
+      return { saved: true, persisted: true };
+    }
+    return {
+      saved: false,
+      persisted: false,
+      error: data.error || `Kayıt başarısız (${res.status})`,
+    };
+  } catch (error) {
+    return { saved: false, persisted: false, error: error.message || 'Ağ hatası' };
   }
-
-  return { saved: true, persisted: false };
 }
 
 export function clearStoredContent() {
   localStorage.removeItem(STORAGE_KEY);
+  cachedDefault = null;
 }
 
 export function exportContent(content) {
@@ -100,7 +106,16 @@ export function isAdminAuthed() {
   return sessionStorage.getItem(AUTH_KEY) === '1';
 }
 
-export function setAdminAuthed(value) {
-  if (value) sessionStorage.setItem(AUTH_KEY, '1');
-  else sessionStorage.removeItem(AUTH_KEY);
+export function setAdminAuthed(value, password = '') {
+  if (value) {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    if (password) sessionStorage.setItem(PASS_KEY, password);
+  } else {
+    sessionStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(PASS_KEY);
+  }
+}
+
+export function getSessionPassword() {
+  return sessionStorage.getItem(PASS_KEY) || '';
 }
