@@ -1,5 +1,5 @@
 import { put } from '@vercel/blob';
-import { json, readBody, getFallbackPassword, assertBlobToken, siteOrigin } from './_http.js';
+import { json, readBody, getFallbackPassword, siteOrigin } from './_http.js';
 
 async function expectedPassword(req) {
   try {
@@ -39,7 +39,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    assertBlobToken();
     const raw = await readBody(req);
     const body = JSON.parse(raw || '{}');
     const password = body.password || req.headers['x-admin-password'] || '';
@@ -61,7 +60,7 @@ export default async function handler(req, res) {
 
     const buffer = Buffer.from(data, 'base64');
     const blob = await put(`kxrgx/${folder}/${filename}`, buffer, {
-      access: 'public',
+      access: 'private',
       contentType:
         ext === '.png'
           ? 'image/png'
@@ -74,7 +73,8 @@ export default async function handler(req, res) {
 
     return json(res, 200, {
       ok: true,
-      path: blob.url,
+      path: `/api/media?path=${encodeURIComponent(blob.pathname)}`,
+      pathname: blob.pathname,
     });
   } catch (error) {
     return json(res, error.status || 500, {

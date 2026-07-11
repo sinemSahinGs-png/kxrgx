@@ -20,20 +20,27 @@ export function getFallbackPassword() {
   return process.env.ADMIN_PASSWORD || 'Gülpembe3169';
 }
 
-export function assertBlobToken() {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    const err = new Error(
-      'BLOB_READ_WRITE_TOKEN eksik. Vercel → Storage → Blob oluştur; token otomatik eklenir. Sonra Redeploy yap.'
-    );
-    err.status = 500;
-    throw err;
-  }
-}
-
 export function siteOrigin(req) {
   const proto = req.headers['x-forwarded-proto'] || 'https';
   const host = req.headers['x-forwarded-host'] || req.headers.host || process.env.VERCEL_URL;
   if (host) return `${proto}://${host}`;
   if (process.env.SITE_URL) return process.env.SITE_URL.replace(/\/$/, '');
   return 'https://kxrgx.com.tr';
+}
+
+export async function streamToString(stream) {
+  const reader = stream.getReader();
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const merged = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return new TextDecoder('utf-8').decode(merged);
 }

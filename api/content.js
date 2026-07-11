@@ -1,16 +1,13 @@
-import { put, list } from '@vercel/blob';
-import { json, readBody, getFallbackPassword, assertBlobToken, siteOrigin } from './_http.js';
+import { put, get } from '@vercel/blob';
+import { json, readBody, getFallbackPassword, siteOrigin, streamToString } from './_http.js';
 
 const CONTENT_PATHNAME = 'kxrgx/site-content.json';
 
 async function readBlobContent() {
-  assertBlobToken();
-  const { blobs } = await list({ prefix: 'kxrgx/site-content', limit: 20 });
-  const hit = blobs.find((b) => b.pathname === CONTENT_PATHNAME) || blobs[0];
-  if (!hit?.url) return null;
-  const res = await fetch(hit.url, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  const result = await get(CONTENT_PATHNAME, { access: 'private' });
+  if (!result || result.statusCode !== 200 || !result.stream) return null;
+  const text = await streamToString(result.stream);
+  return JSON.parse(text);
 }
 
 async function readSeedContent(req) {
@@ -24,16 +21,15 @@ async function loadContent(req) {
   try {
     const fromBlob = await readBlobContent();
     if (fromBlob) return fromBlob;
-  } catch (error) {
-    if (error.message?.includes('BLOB_READ_WRITE_TOKEN')) throw error;
+  } catch {
+    /* blob yoksa veya OIDC localde yoksa seed'e düş */
   }
   return readSeedContent(req);
 }
 
 async function saveContent(content) {
-  assertBlobToken();
   await put(CONTENT_PATHNAME, `${JSON.stringify(content, null, 2)}\n`, {
-    access: 'public',
+    access: 'private',
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: 'application/json; charset=utf-8',

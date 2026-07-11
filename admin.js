@@ -715,7 +715,7 @@ function bindStaticActions() {
     gatherContentFromForm();
     const result = await saveContent(content);
     if (result.persisted) showToast('Kalıcı olarak kaydedildi. Site güncellendi.');
-    else showToast(result.error || 'Kayıt başarısız. Vercel Blob Storage kurulu mu?');
+    else showToast(result.error || 'Kayıt başarısız. Vercel Blob bağlantısını kontrol et.');
   });
 
   document.getElementById('export-btn').addEventListener('click', () => {
