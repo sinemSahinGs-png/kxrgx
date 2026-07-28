@@ -8,10 +8,12 @@ import {
   isAdminAuthed,
   setAdminAuthed,
   getAdminPassword,
+  getSessionPassword,
 } from './content-store.js';
 
 let content = null;
 let adminReady = false;
+let publishing = false;
 
 const TABS = [
   { id: 'general', label: 'Genel' },
@@ -68,31 +70,94 @@ function fileToDataUrl(file) {
   });
 }
 
-async function uploadImageFile(file, folder = 'images') {
+function safeUploadName(name) {
+  return String(name || 'upload')
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+}
+
+function slugBeatId(label, fallbackIndex) {
+  const slug = String(label || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 40);
+  return slug || `beat-${String(fallbackIndex + 1).padStart(2, '0')}`;
+}
+
+async function uploadViaBase64(file, folder) {
   const dataUrl = await fileToDataUrl(file);
-  const password = sessionStorage.getItem('kxrgx-admin-pass') || '';
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Admin-Password': password,
-      },
-      body: JSON.stringify({
-        folder,
-        filename: file.name,
-        data: dataUrl,
-        password,
-      }),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.ok && json.path) return json.path;
-    }
-  } catch {
-    /* API yoksa data URL */
+  const password = getSessionPassword();
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Password': password,
+    },
+    body: JSON.stringify({
+      folder,
+      filename: file.name,
+      data: dataUrl,
+      password,
+    }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok || !payload.ok || !payload.path) {
+    throw new Error(payload.error || `Yükleme başarısız (${res.status})`);
   }
-  return dataUrl;
+  return payload.path;
+}
+
+async function uploadImageFile(file, folder = 'images') {
+  try {
+    return await uploadViaBase64(file, folder);
+  } catch {
+    return fileToDataUrl(file);
+  }
+}
+
+async function uploadAudioFile(file) {
+  const password = getSessionPassword();
+  const folder = 'beats';
+  const pathname = `kxrgx/beats/${safeUploadName(file.name) || 'beat'}`;
+
+  try {
+    const { upload } = await import('@vercel/blob/client');
+    const blob = await upload(pathname, file, {
+      access: 'public',
+      handleUploadUrl: '/api/upload',
+      clientPayload: JSON.stringify({ password, folder }),
+    });
+    if (blob?.url) return blob.url;
+  } catch {
+    /* yerelde veya token yoksa base64 */
+  }
+
+  if (file.size > 3.5 * 1024 * 1024) {
+    throw new Error('Dosya 3.5 MB üstü; canlı sitede Blob yüklemesi gerekir.');
+  }
+  return uploadViaBase64(file, folder);
+}
+
+async function publishNow(message = 'Yayında.') {
+  if (publishing) return { ok: false, error: 'Kayıt sürüyor…' };
+  publishing = true;
+  try {
+    gatherContentFromForm();
+    const result = await saveContent(content);
+    if (result.persisted) {
+      showToast(message);
+      return { ok: true };
+    }
+    showToast(result.error || 'Kayıt başarısız.');
+    return { ok: false, error: result.error };
+  } finally {
+    publishing = false;
+  }
 }
 
 function field(label, key, value, type = 'text', rows = 3) {
@@ -162,7 +227,6 @@ function renderGeneral() {
         ${field('Sayfa başlığı', 'seo.title', content.seo.title)}
         ${field('Meta açıklama', 'seo.description', content.seo.description, 'textarea', 3)}
         ${field('Radyo playlist ID', 'radioPlaylistId', content.radioPlaylistId)}
-        ${field('Beat fiyatı', 'beatPrice', content.beatPrice)}
       </div>
       <div class="admin-card-block">
         <h3>Masaüstü menü (her satır: TR|EN|#href)</h3>
@@ -238,8 +302,10 @@ function renderBeatsPanel() {
   return `
     <section class="admin-panel" data-panel="beats">
       <h2>Beat Satışı</h2>
+      <p class="image-upload-hint">MP3 / WAV yükle, ismi düzenle, kaydet — sitede anında yayınlanır.</p>
       <div class="admin-grid admin-grid-2">
         ${field('Stem listesi (virgülle)', 'stemsRaw', (content.stems || []).join(', '))}
+        ${field('Beat fiyatı', 'beatPrice', content.beatPrice)}
       </div>
       <div id="beats-list"></div>
       <button type="button" class="btn-ghost" data-add-beat>+ Beat ekle</button>
@@ -250,20 +316,40 @@ function renderBeatsList() {
   const wrap = document.getElementById('beats-list');
   if (!wrap) return;
   wrap.innerHTML = content.beats
-    .map(
-      (b, i) => `
+    .map((b, i) => {
+      const hasAudio = Boolean(b.audio);
+      return `
     <div class="admin-card-block" data-beat="${i}">
       <div class="admin-card-head">
-        <h3>Beat ${i + 1}</h3>
+        <h3>${esc(b.number || `Beat ${i + 1}`)}</h3>
         <button type="button" class="btn-ghost" data-remove-beat="${i}">Sil</button>
       </div>
       <div class="admin-grid admin-grid-2">
-        <label>ID<input data-beat-field="id" value="${esc(b.id)}" /></label>
-        <label>Numara<input data-beat-field="number" value="${esc(b.number)}" /></label>
-        <label style="grid-column:1/-1">Audio yolu<input data-beat-field="audio" value="${esc(b.audio)}" /></label>
+        <label>Görünen isim<input data-beat-field="number" value="${esc(b.number)}" placeholder="BEAT 01" /></label>
+        <label>ID<input data-beat-field="id" value="${esc(b.id)}" placeholder="beat-01" /></label>
       </div>
-    </div>`
-    )
+      <div class="beat-upload">
+        <div class="beat-upload__meta">
+          <p class="beat-upload__label">Ses dosyası</p>
+          <p class="beat-upload__path" data-beat-path>${esc(b.audio || 'Henüz dosya yok')}</p>
+          <input type="hidden" data-beat-field="audio" value="${esc(b.audio || '')}" />
+          ${
+            hasAudio
+              ? `<audio class="beat-upload__player" controls preload="metadata" src="${esc(b.audio)}"></audio>`
+              : ''
+          }
+        </div>
+        <div class="beat-upload__actions">
+          <label class="btn-ghost image-upload-btn">
+            Dosya seç
+            <input type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" hidden data-beat-file="${i}" />
+          </label>
+          ${hasAudio ? `<a class="btn-ghost" href="${esc(b.audio)}" target="_blank" rel="noopener">Aç</a>` : ''}
+        </div>
+        <p class="image-upload-hint">Yükleme bitince otomatik yayınlanır.</p>
+      </div>
+    </div>`;
+    })
     .join('');
 }
 
@@ -397,10 +483,12 @@ function readListFields() {
 
   document.querySelectorAll('[data-beat]').forEach((block) => {
     const i = Number(block.dataset.beat);
+    const number = block.querySelector('[data-beat-field="number"]').value.trim();
+    const idInput = block.querySelector('[data-beat-field="id"]').value.trim();
     content.beats[i] = {
-      id: block.querySelector('[data-beat-field="id"]').value.trim() || `beat-${i + 1}`,
-      number: block.querySelector('[data-beat-field="number"]').value,
-      audio: block.querySelector('[data-beat-field="audio"]').value,
+      id: idInput || slugBeatId(number, i),
+      number: number || `BEAT ${String(i + 1).padStart(2, '0')}`,
+      audio: block.querySelector('[data-beat-field="audio"]').value.trim(),
     };
   });
 
@@ -446,7 +534,7 @@ function gatherContentFromForm() {
 }
 
 function bindDynamicActions() {
-  panelsEl.addEventListener('click', (e) => {
+  panelsEl.addEventListener('click', async (e) => {
     const t = e.target;
     if (t.matches('[data-add-project]')) {
       gatherContentFromForm();
@@ -470,13 +558,14 @@ function bindDynamicActions() {
     if (t.matches('[data-add-beat]')) {
       gatherContentFromForm();
       const n = String(content.beats.length + 1).padStart(2, '0');
-      content.beats.push({ id: `beat-${n}`, number: `BEAT ${n}`, audio: `./audio/beat-${n}.mp3` });
+      content.beats.push({ id: `beat-${n}`, number: `BEAT ${n}`, audio: '' });
       renderBeatsList();
     }
     if (t.matches('[data-remove-beat]')) {
       gatherContentFromForm();
       content.beats.splice(Number(t.dataset.removeBeat), 1);
       renderBeatsList();
+      await publishNow('Beat silindi ve yayınlandı.');
     }
     if (t.matches('[data-add-service]')) {
       gatherContentFromForm();
@@ -489,14 +578,53 @@ function bindDynamicActions() {
       renderServicesList();
     }
   });
+
+  panelsEl.addEventListener('change', async (e) => {
+    const input = e.target;
+    if (!input.matches('[data-beat-file]')) return;
+    const index = Number(input.dataset.beatFile);
+    const file = input.files?.[0];
+    if (!file || Number.isNaN(index)) return;
+
+    gatherContentFromForm();
+    const beat = content.beats[index];
+    if (!beat) return;
+
+    const label = input.closest('.beat-upload')?.querySelector('.beat-upload__path');
+    if (label) label.textContent = `Yükleniyor: ${file.name}…`;
+    showToast('Beat yükleniyor…');
+
+    try {
+      const url = await uploadAudioFile(file);
+      beat.audio = url;
+      if (!beat.number || /^BEAT\s*\d+$/i.test(beat.number)) {
+        const stem = file.name.replace(/\.[^.]+$/, '').trim();
+        if (stem) beat.number = stem.toUpperCase();
+      }
+      if (!beat.id || /^beat-\d+$/i.test(beat.id)) {
+        beat.id = slugBeatId(beat.number, index);
+      }
+      renderBeatsList();
+      await publishNow(`“${beat.number}” yayında.`);
+    } catch (error) {
+      console.error(error);
+      showToast(error.message || 'Yükleme başarısız.');
+      renderBeatsList();
+    } finally {
+      input.value = '';
+    }
+  });
 }
 
 function bindStaticActions() {
   document.getElementById('save-btn').addEventListener('click', async () => {
-    gatherContentFromForm();
-    const result = await saveContent(content);
-    if (result.persisted) showToast('Kaydedildi. Siteyi yenile.');
-    else showToast(result.error || 'Kayıt başarısız.');
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    try {
+      await publishNow('Kaydedildi — sitede canlı.');
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   document.getElementById('export-btn').addEventListener('click', () => {

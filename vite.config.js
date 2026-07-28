@@ -75,20 +75,36 @@ export default defineConfig({
           if (req.method !== 'POST') return next();
           try {
             const body = JSON.parse(await readBody(req));
+            // Client blob upload protocol is production-only
+            if (body.type === 'blob.generate-client-token' || body.type === 'blob.upload-completed') {
+              res.statusCode = 400;
+              res.end(
+                JSON.stringify({
+                  error: 'Yerelde Blob client upload yok; base64 yükleme kullanılır.',
+                })
+              );
+              return;
+            }
+            const ext = path.extname(body.filename || '').toLowerCase() || '.jpg';
+            const imageExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+            const audioExts = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.mpeg', '.webm'];
+            if (!imageExts.includes(ext) && !audioExts.includes(ext)) {
+              res.statusCode = 400;
+              res.end(JSON.stringify({ ok: false, error: 'Desteklenmeyen dosya türü' }));
+              return;
+            }
+            const isAudio = audioExts.includes(ext);
             const folder =
               body.folder === 'archive'
                 ? 'archive'
                 : body.folder === 'images'
                   ? 'images'
-                  : 'projects';
-            const ext = path.extname(body.filename || '').toLowerCase() || '.jpg';
-            const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-            if (!allowed.includes(ext)) {
-              res.statusCode = 400;
-              res.end(JSON.stringify({ ok: false, error: 'Desteklenmeyen dosya türü' }));
-              return;
-            }
-            const base = safeFilename(path.basename(body.filename || 'image', ext)) || 'image';
+                  : body.folder === 'beats' || body.folder === 'audio' || isAudio
+                    ? 'audio'
+                    : 'projects';
+            const base =
+              safeFilename(path.basename(body.filename || (isAudio ? 'beat' : 'image'), ext)) ||
+              (isAudio ? 'beat' : 'image');
             const filename = `${base}-${Date.now()}${ext}`;
             const dir = path.resolve(rootDir, 'public', folder);
             fs.mkdirSync(dir, { recursive: true });

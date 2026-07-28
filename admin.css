@@ -398,6 +398,43 @@ button:active,
   font-size: 0.72rem;
 }
 
+.beat-upload {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px dashed rgba(155, 109, 255, 0.35);
+  border-radius: 0.85rem;
+  background: rgba(18, 10, 34, 0.45);
+}
+
+.beat-upload__label {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.beat-upload__path {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  word-break: break-all;
+  color: var(--text);
+}
+
+.beat-upload__player {
+  width: 100%;
+  margin-top: 0.55rem;
+  height: 2.2rem;
+}
+
+.beat-upload__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 @media (max-width: 720px) {
   .image-upload {
     grid-template-columns: 1fr;

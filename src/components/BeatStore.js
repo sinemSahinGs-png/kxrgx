@@ -50,7 +50,7 @@ export function renderBeatStore() {
         </div>
 
         <div class="beats-grid">
-          ${beats.map(beatCardMarkup).join('')}
+          ${beats.filter((b) => b.audio).map(beatCardMarkup).join('')}
         </div>
 
         <div class="beats-cta contact" id="contact" data-text-block>
