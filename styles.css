@@ -794,6 +794,53 @@ dd {
   transform: translateY(-4px);
 }
 
+.archive-grid figure.is-playable {
+  cursor: pointer;
+}
+
+.archive-grid figure.is-playable:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.beat-play {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 4, 16, 0.28);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.beat-play::before {
+  content: '';
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(10, 6, 18, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.beat-play::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0.55rem 0 0.55rem 0.9rem;
+  border-color: transparent transparent transparent rgba(255, 255, 255, 0.92);
+  margin-left: 0.2rem;
+}
+
+.archive-grid figure.is-playable:hover .beat-play,
+.archive-grid figure.is-playable:focus-visible .beat-play {
+  opacity: 1;
+}
+
 .study-visual {
   aspect-ratio: 4 / 5;
   background-color: #0a0a0a;

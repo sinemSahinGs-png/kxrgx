@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 160" fill="none" aria-hidden="true">
+  <!-- Crow primary feather  asymmetric vane, dark shaft -->
+  <path fill="#070707" stroke="#1e1e1e" stroke-width="0.4" d="M24 2C18 8 10 28 8 52C6 76 7 102 10 128C12 142 16 152 24 156V2Z"/>
+  <path fill="#101010" stroke="#222222" stroke-width="0.35" d="M24 2C30 10 38 32 40 58C42 84 41 110 38 134C36 146 32 154 24 156V2Z"/>
+  <path fill="#181818" opacity="0.55" d="M24 6C20 24 16 48 15 72C14 96 16 118 20 138C21 144 22 150 24 152V6Z"/>
+  <path fill="#050505" d="M24 152C22 154 20 156 18 157C16 158 14 157 13 155C12 153 13 151 15 150C18 149 21 150 24 152Z"/>
+  <line x1="24" y1="2" x2="24" y2="156" stroke="#000000" stroke-width="1.35" stroke-linecap="round"/>
+  <g stroke="#252525" stroke-width="0.35" opacity="0.65">
+    <line x1="24" y1="18" x2="14" y2="22"/><line x1="24" y1="18" x2="32" y2="20"/>
+    <line x1="24" y1="32" x2="12" y2="38"/><line x1="24" y1="32" x2="34" y2="36"/>
+    <line x1="24" y1="46" x2="11" y2="54"/><line x1="24" y1="46" x2="36" y2="52"/>
+    <line x1="24" y1="60" x2="10" y2="70"/><line x1="24" y1="60" x2="37" y2="68"/>
+    <line x1="24" y1="74" x2="10" y2="86"/><line x1="24" y1="74" x2="38" y2="84"/>
+    <line x1="24" y1="88" x2="11" y2="100"/><line x1="24" y1="88" x2="37" y2="98"/>
+    <line x1="24" y1="102" x2="13" y2="114"/><line x1="24" y1="102" x2="35" y2="112"/>
+    <line x1="24" y1="116" x2="15" y2="126"/><line x1="24" y1="116" x2="33" y2="124"/>
+    <line x1="24" y1="130" x2="17" y2="138"/><line x1="24" y1="130" x2="31" y2="136"/>
+  </g>
+</svg>

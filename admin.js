@@ -16,14 +16,12 @@ let adminReady = false;
 const TABS = [
   { id: 'general', label: 'Genel' },
   { id: 'hero', label: 'Hero' },
-  { id: 'about', label: 'Hakkında' },
-  { id: 'works', label: 'Projeler' },
-  { id: 'capabilities', label: 'Hizmetler' },
-  { id: 'process', label: 'Süreç' },
-  { id: 'archive', label: 'Çalışmalar' },
-  { id: 'cta', label: 'İletişim' },
-  { id: 'footer', label: 'Footer' },
-  { id: 'music', label: 'Müzik' },
+  { id: 'about', label: 'Tanıtım' },
+  { id: 'projects', label: 'Projeler' },
+  { id: 'beats', label: 'Beat Satışı' },
+  { id: 'services', label: 'Hizmetler' },
+  { id: 'contact', label: 'İletişim' },
+  { id: 'media', label: 'Görseller' },
   { id: 'theme', label: 'Tema' },
   { id: 'admin', label: 'Güvenlik' },
 ];
@@ -70,7 +68,7 @@ function fileToDataUrl(file) {
   });
 }
 
-async function uploadImageFile(file, folder = 'projects') {
+async function uploadImageFile(file, folder = 'images') {
   const dataUrl = await fileToDataUrl(file);
   const password = sessionStorage.getItem('kxrgx-admin-pass') || '';
   try {
@@ -92,29 +90,9 @@ async function uploadImageFile(file, folder = 'projects') {
       if (json.ok && json.path) return json.path;
     }
   } catch {
-    /* API yoksa data URL kullan */
+    /* API yoksa data URL */
   }
   return dataUrl;
-}
-
-function imageUploadBlock({ preview, pathValue, folder, fieldAttr, index }) {
-  const hasPreview = Boolean(preview || pathValue);
-  const src = preview || pathValue || '';
-  return `
-    <div class="image-upload" style="grid-column:1/-1">
-      <div class="image-upload-preview ${hasPreview ? 'has-image' : ''}">
-        ${hasPreview ? `<img src="${esc(src)}" alt="Önizleme" />` : '<span>Görsel yok</span>'}
-      </div>
-      <div class="image-upload-actions">
-        <label class="btn-ghost image-upload-btn">
-          Görsel yükle
-          <input type="file" accept="image/*" data-upload-folder="${folder}" data-upload-target="${fieldAttr}" data-upload-index="${index}" hidden />
-        </label>
-        ${hasPreview ? `<button type="button" class="btn-ghost" data-clear-image="${fieldAttr}" data-clear-index="${index}">Kaldır</button>` : ''}
-        <input type="hidden" ${fieldAttr}="image" value="${esc(pathValue || '')}" />
-        <span class="image-upload-hint">JPG, PNG, WEBP</span>
-      </div>
-    </div>`;
 }
 
 function field(label, key, value, type = 'text', rows = 3) {
@@ -154,103 +132,87 @@ function deepMerge(target, source) {
   return target;
 }
 
+function ensureShape() {
+  content.version = 2;
+  content.admin ||= { password: 'Gülpembe3169' };
+  content.seo ||= { title: '', description: '' };
+  content.hero ||= { copy: '', cta: '' };
+  content.about ||= { titleTR: 'TANITIM', titleEN: 'ABOUT', textTR: '', textEN: '', cutout: '' };
+  content.contact ||= { textTR: '', cta: 'INSTAGRAM DM' };
+  content.theme ||= { bg: '#18181c', bg2: '#222228', accent: '#9b6dff', text: '#f2f2ef' };
+  content.nav ||= [];
+  content.projects ||= [];
+  content.beats ||= [];
+  content.stems ||= [];
+  content.services ||= [];
+}
+
 function renderGeneral() {
   return `
     <section class="admin-panel is-active" data-panel="general">
       <h2>Genel & SEO</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Marka adı', 'brand', content.brand)}
+        ${field('Marka', 'brand', content.brand)}
+        ${field('Rol (TR)', 'roleTR', content.roleTR)}
+        ${field('Rol (EN)', 'roleEN', content.roleEN)}
+        ${field('E-posta', 'email', content.email)}
+        ${field('Instagram handle', 'instagramHandle', content.instagramHandle)}
+        ${field('Instagram URL', 'instagramUrl', content.instagramUrl)}
+        ${field('Instagram DM URL', 'instagramDmUrl', content.instagramDmUrl)}
         ${field('Sayfa başlığı', 'seo.title', content.seo.title)}
-        ${field('Meta açıklama', 'seo.description', content.seo.description, 'textarea', 2)}
-        ${field('Menü butonu', 'nav.menuLabel', content.nav.menuLabel)}
+        ${field('Meta açıklama', 'seo.description', content.seo.description, 'textarea', 3)}
+        ${field('Radyo playlist ID', 'radioPlaylistId', content.radioPlaylistId)}
+        ${field('Beat fiyatı', 'beatPrice', content.beatPrice)}
       </div>
       <div class="admin-card-block">
-        <h3>Marquee (her satır virgülle)</h3>
-        <textarea data-key="marquee" rows="3">${esc(content.marquee.join(', '))}</textarea>
-      </div>
-      <div class="admin-card-block">
-        <h3>Index şeridi (virgülle)</h3>
-        <textarea data-key="indexStrip" rows="2">${esc(content.indexStrip.join(', '))}</textarea>
+        <h3>Masaüstü menü (her satır: TR|EN|#href)</h3>
+        <textarea data-key="navRaw" rows="6">${esc(
+          (content.nav || []).map((n) => `${n.labelTR}|${n.labelEN}|${n.href}`).join('\n')
+        )}</textarea>
       </div>
     </section>`;
 }
 
 function renderHero() {
-  const h = content.hero;
   return `
     <section class="admin-panel" data-panel="hero">
       <h2>Hero</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Üst meta', 'hero.meta', h.meta)}
-        ${field('Başlık', 'hero.title', h.title)}
-        ${field('Alt başlık', 'hero.subtitle', h.subtitle)}
-        ${field('Açıklama', 'hero.copy', h.copy, 'textarea', 3)}
-        ${field('Buton metni', 'hero.playButton', h.playButton)}
-        ${field('Üst portre yolu', 'hero.portraitTop', h.portraitTop)}
-        ${field('Alt portre yolu', 'hero.portraitBottom', h.portraitBottom)}
+        ${field('Hero yazısı', 'hero.copy', content.hero.copy, 'textarea', 2)}
+        ${field('Buton metni', 'hero.cta', content.hero.cta)}
+        ${field('Hero video yolu', 'heroVideo', content.heroVideo)}
       </div>
     </section>`;
 }
 
 function renderAbout() {
-  const a = content.about;
   return `
     <section class="admin-panel" data-panel="about">
-      <h2>Hakkında</h2>
+      <h2>Tanıtım</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'about.sectionLabel', a.sectionLabel)}
-        ${field('Sayfa no.', 'about.folio', a.folio)}
-        ${field('Başlık satır 1', 'about.titleLine1', a.titleLine1)}
-        ${field('Başlık italik', 'about.titleItalic', a.titleItalic)}
-        ${field('Başlık satır 3', 'about.titleLine3', a.titleLine3)}
-        ${field('Drop cap', 'about.dropCap', a.dropCap)}
-        ${field('Giriş paragrafı', 'about.lede', a.lede, 'textarea', 3)}
-        ${field('İkinci paragraf', 'about.paragraph', a.paragraph, 'textarea', 3)}
+        ${field('Başlık TR', 'about.titleTR', content.about.titleTR)}
+        ${field('Başlık EN', 'about.titleEN', content.about.titleEN)}
+        ${field('Cutout görsel yolu', 'about.cutout', content.about.cutout || content.aboutCutout || '')}
+        ${field('Metin TR', 'about.textTR', content.about.textTR, 'textarea', 12)}
+        ${field('Metin EN', 'about.textEN', content.about.textEN, 'textarea', 12)}
       </div>
-      <div id="about-meta-list"></div>
-      <button type="button" class="btn-ghost" data-add-about-meta>+ Meta satırı ekle</button>
     </section>`;
 }
 
-function renderAboutMeta() {
-  const wrap = document.getElementById('about-meta-list');
-  if (!wrap) return;
-  wrap.innerHTML = content.about.meta
-    .map(
-      (row, i) => `
-    <div class="admin-card-block" data-about-meta="${i}">
-      <div class="admin-card-head">
-        <h3>Meta ${i + 1}</h3>
-        <button type="button" class="btn-ghost" data-remove-about-meta="${i}">Sil</button>
-      </div>
-      <div class="admin-grid admin-grid-2">
-        <label>Etiket<input data-about-field="label" value="${esc(row.label)}" /></label>
-        <label>Değer<input data-about-field="value" value="${esc(row.value)}" /></label>
-        <label><input type="checkbox" data-about-field="statusDot" ${row.statusDot ? 'checked' : ''} /> Durum noktası</label>
-      </div>
-    </div>`
-    )
-    .join('');
-}
-
-function renderWorks() {
+function renderProjectsPanel() {
   return `
-    <section class="admin-panel" data-panel="works">
+    <section class="admin-panel" data-panel="projects">
       <h2>Projeler</h2>
-      <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'works.sectionLabel', content.works.sectionLabel)}
-        ${field('Sayfa no.', 'works.folio', content.works.folio)}
-        ${field('Başlık', 'works.title', content.works.title)}
-      </div>
+      <p class="image-upload-hint">YouTube ID gir; thumbnail otomatik oluşur.</p>
       <div id="projects-list"></div>
       <button type="button" class="btn-ghost" data-add-project>+ Proje ekle</button>
     </section>`;
 }
 
-function renderProjects() {
+function renderProjectsList() {
   const wrap = document.getElementById('projects-list');
   if (!wrap) return;
-  wrap.innerHTML = content.works.projects
+  wrap.innerHTML = content.projects
     .map(
       (p, i) => `
     <div class="admin-card-block" data-project="${i}">
@@ -259,181 +221,104 @@ function renderProjects() {
         <button type="button" class="btn-ghost" data-remove-project="${i}">Sil</button>
       </div>
       <div class="admin-grid admin-grid-2">
-        <label>Rozet<input data-project-field="badge" value="${esc(p.badge)}" /></label>
+        <label>ID<input data-project-field="id" value="${esc(p.id)}" /></label>
         <label>Başlık<input data-project-field="title" value="${esc(p.title)}" /></label>
-        <label>Tür<input data-project-field="type" value="${esc(p.type)}" /></label>
-        <label>Sanatçı<input data-project-field="artist" value="${esc(p.artist)}" /></label>
-        ${imageUploadBlock({ pathValue: p.image, folder: 'projects', fieldAttr: 'data-project-field', index: i })}
-        <label>Müzik yolu<input data-project-field="audio" value="${esc(p.audio)}" /></label>
-        <label>Kontur<select data-project-field="contour">
-          <option value="contour-ellipses" ${p.contour === 'contour-ellipses' ? 'selected' : ''}>Ellipses</option>
-          <option value="contour-flow" ${p.contour === 'contour-flow' ? 'selected' : ''}>Flow</option>
-          <option value="contour-grid" ${p.contour === 'contour-grid' ? 'selected' : ''}>Grid</option>
+        <label>YouTube ID<input data-project-field="youtubeId" value="${esc(p.youtubeId)}" /></label>
+        <label>Durum<select data-project-field="status">
+          <option value="published" ${p.status === 'published' ? 'selected' : ''}>Yayında</option>
+          <option value="soon" ${p.status === 'soon' ? 'selected' : ''}>Yakında</option>
         </select></label>
-        <label>Etiketler (virgülle)<input data-project-field="tags" value="${esc(p.tags.join(', '))}" /></label>
-        <label style="grid-column:1/-1">Açıklama<textarea data-project-field="description" rows="2">${esc(p.description)}</textarea></label>
       </div>
     </div>`
     )
     .join('');
 }
 
-function renderCapabilities() {
+function renderBeatsPanel() {
   return `
-    <section class="admin-panel" data-panel="capabilities">
+    <section class="admin-panel" data-panel="beats">
+      <h2>Beat Satışı</h2>
+      <div class="admin-grid admin-grid-2">
+        ${field('Stem listesi (virgülle)', 'stemsRaw', (content.stems || []).join(', '))}
+      </div>
+      <div id="beats-list"></div>
+      <button type="button" class="btn-ghost" data-add-beat>+ Beat ekle</button>
+    </section>`;
+}
+
+function renderBeatsList() {
+  const wrap = document.getElementById('beats-list');
+  if (!wrap) return;
+  wrap.innerHTML = content.beats
+    .map(
+      (b, i) => `
+    <div class="admin-card-block" data-beat="${i}">
+      <div class="admin-card-head">
+        <h3>Beat ${i + 1}</h3>
+        <button type="button" class="btn-ghost" data-remove-beat="${i}">Sil</button>
+      </div>
+      <div class="admin-grid admin-grid-2">
+        <label>ID<input data-beat-field="id" value="${esc(b.id)}" /></label>
+        <label>Numara<input data-beat-field="number" value="${esc(b.number)}" /></label>
+        <label style="grid-column:1/-1">Audio yolu<input data-beat-field="audio" value="${esc(b.audio)}" /></label>
+      </div>
+    </div>`
+    )
+    .join('');
+}
+
+function renderServicesPanel() {
+  return `
+    <section class="admin-panel" data-panel="services">
       <h2>Hizmetler</h2>
-      <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'capabilities.sectionLabel', content.capabilities.sectionLabel)}
-        ${field('Sayfa no.', 'capabilities.folio', content.capabilities.folio)}
-        ${field('Başlık', 'capabilities.title', content.capabilities.title)}
-      </div>
-      <div id="capabilities-list"></div>
-      <button type="button" class="btn-ghost" data-add-capability>+ Hizmet ekle</button>
+      <div id="services-list"></div>
+      <button type="button" class="btn-ghost" data-add-service>+ Hizmet ekle</button>
     </section>`;
 }
 
-function renderCapabilitiesList() {
-  const wrap = document.getElementById('capabilities-list');
+function renderServicesList() {
+  const wrap = document.getElementById('services-list');
   if (!wrap) return;
-  wrap.innerHTML = content.capabilities.items
-    .map(
-      (item, i) => `
-    <div class="admin-card-block" data-capability="${i}">
-      <div class="admin-card-head"><h3>Hizmet ${i + 1}</h3><button type="button" class="btn-ghost" data-remove-capability="${i}">Sil</button></div>
-      <div class="admin-grid admin-grid-2">
-        <label>İndeks<input data-cap-field="idx" value="${esc(item.idx)}" /></label>
-        <label>Başlık<input data-cap-field="title" value="${esc(item.title)}" /></label>
-        <label style="grid-column:1/-1">Açıklama<textarea data-cap-field="body" rows="2">${esc(item.body)}</textarea></label>
-        <label>Alt satır<input data-cap-field="footer" value="${esc(item.footer)}" /></label>
-      </div>
-    </div>`
-    )
-    .join('');
-}
-
-function renderProcess() {
-  return `
-    <section class="admin-panel" data-panel="process">
-      <h2>Süreç</h2>
-      <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'process.sectionLabel', content.process.sectionLabel)}
-        ${field('Sayfa no.', 'process.folio', content.process.folio)}
-        ${field('Başlık', 'process.title', content.process.title)}
-      </div>
-      <div id="process-list"></div>
-      <button type="button" class="btn-ghost" data-add-step>+ Adım ekle</button>
-    </section>`;
-}
-
-function renderProcessList() {
-  const wrap = document.getElementById('process-list');
-  if (!wrap) return;
-  wrap.innerHTML = content.process.steps
-    .map(
-      (step, i) => `
-    <div class="admin-card-block" data-step="${i}">
-      <div class="admin-card-head"><h3>Adım ${i + 1}</h3><button type="button" class="btn-ghost" data-remove-step="${i}">Sil</button></div>
-      <div class="admin-grid admin-grid-2">
-        <label>No<input data-step-field="num" value="${esc(step.num)}" /></label>
-        <label>Başlık<input data-step-field="title" value="${esc(step.title)}" /></label>
-        <label style="grid-column:1/-1">Açıklama<textarea data-step-field="body" rows="2">${esc(step.body)}</textarea></label>
-      </div>
-    </div>`
-    )
-    .join('');
-}
-
-function renderArchive() {
-  return `
-    <section class="admin-panel" data-panel="archive">
-      <h2>Çalışmalar</h2>
-      <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'archive.sectionLabel', content.archive.sectionLabel)}
-        ${field('Sayfa no.', 'archive.folio', content.archive.folio)}
-        ${field('Başlık', 'archive.title', content.archive.title)}
-        ${field('Link metni', 'archive.linkText', content.archive.linkText)}
-        ${field('Link hedefi', 'archive.linkHref', content.archive.linkHref)}
-      </div>
-      <div id="archive-list"></div>
-      <button type="button" class="btn-ghost" data-add-study>+ Çalışma ekle</button>
-    </section>`;
-}
-
-function renderArchiveList() {
-  const wrap = document.getElementById('archive-list');
-  if (!wrap) return;
-  const patterns = ['lines', 'rings', 'grid', 'waves', 'diag', 'dots'];
-  wrap.innerHTML = content.archive.studies
+  wrap.innerHTML = content.services
     .map(
       (s, i) => `
-    <div class="admin-card-block" data-study="${i}">
-      <div class="admin-card-head"><h3>Çalışma ${i + 1}</h3><button type="button" class="btn-ghost" data-remove-study="${i}">Sil</button></div>
+    <div class="admin-card-block" data-service="${i}">
+      <div class="admin-card-head">
+        <h3>Hizmet ${i + 1}</h3>
+        <button type="button" class="btn-ghost" data-remove-service="${i}">Sil</button>
+      </div>
       <div class="admin-grid admin-grid-2">
-        <label>Numara<input data-study-field="number" value="${esc(s.number)}" /></label>
-        <label>Etiket<input data-study-field="tag" value="${esc(s.tag)}" /></label>
-        <label>Yedek desen<select data-study-field="pattern">${patterns.map((p) => `<option value="${p}" ${s.pattern === p ? 'selected' : ''}>${p}</option>`).join('')}</select></label>
-        ${imageUploadBlock({ pathValue: s.image || '', folder: 'archive', fieldAttr: 'data-study-field', index: i })}
+        <label>EN<input data-service-field="en" value="${esc(s.en)}" /></label>
+        <label>TR<input data-service-field="tr" value="${esc(s.tr)}" /></label>
       </div>
     </div>`
     )
     .join('');
 }
 
-function renderCta() {
-  const c = content.cta;
+function renderContact() {
   return `
-    <section class="admin-panel" data-panel="cta">
-      <h2>İletişim / CTA</h2>
+    <section class="admin-panel" data-panel="contact">
+      <h2>İletişim</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Bölüm etiketi', 'cta.sectionLabel', c.sectionLabel)}
-        ${field('Sayfa no.', 'cta.folio', c.folio)}
-        ${field('Başlık satır 1', 'cta.titleLine1', c.titleLine1)}
-        ${field('Başlık italik', 'cta.titleItalic', c.titleItalic)}
-        ${field('Açıklama', 'cta.body', c.body, 'textarea', 3)}
-        ${field('Buton metni', 'cta.buttonText', c.buttonText)}
-        ${field('E-posta', 'cta.email', c.email)}
-        ${field('Konum', 'cta.location', c.location)}
+        ${field('İletişim metni', 'contact.textTR', content.contact.textTR, 'textarea', 3)}
+        ${field('Buton metni', 'contact.cta', content.contact.cta)}
       </div>
     </section>`;
 }
 
-function renderFooter() {
+function renderMedia() {
   return `
-    <section class="admin-panel" data-panel="footer">
-      <h2>Footer</h2>
+    <section class="admin-panel" data-panel="media">
+      <h2>Görseller & Medya</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Marka', 'footer.brand', content.footer.brand)}
-        ${field('Slogan', 'footer.tagline', content.footer.tagline, 'textarea', 2)}
-        ${field('Büyük lockup', 'footer.lockup', content.footer.lockup)}
+        ${field('Footer / portre üst (top)', 'portraitTop', content.portraitTop)}
+        ${field('Footer / portre alt (bottom)', 'portraitBottom', content.portraitBottom)}
+        ${field('Karga tüyü', 'crowFeather', content.crowFeather)}
+        ${field('Tanıtım cutout', 'aboutCutout', content.aboutCutout)}
+        ${field('Hero video', 'heroVideo', content.heroVideo)}
       </div>
-      <div id="footer-columns"></div>
-      <button type="button" class="btn-ghost" data-add-footer-col>+ Sütun ekle</button>
-    </section>`;
-}
-
-function renderFooterColumns() {
-  const wrap = document.getElementById('footer-columns');
-  if (!wrap) return;
-  wrap.innerHTML = content.footer.columns
-    .map(
-      (col, i) => `
-    <div class="admin-card-block" data-footer-col="${i}">
-      <div class="admin-card-head"><h3>Sütun ${i + 1}</h3><button type="button" class="btn-ghost" data-remove-footer-col="${i}">Sil</button></div>
-      <label>Başlık<input data-footer-col-title value="${esc(col.title)}" /></label>
-      <label>Linkler (her satır: Etiket|url)<textarea data-footer-col-links rows="3">${esc(col.links.map((l) => `${l.label}|${l.href}`).join('\n'))}</textarea></label>
-    </div>`
-    )
-    .join('');
-}
-
-function renderMusic() {
-  return `
-    <section class="admin-panel" data-panel="music">
-      <h2>Müzik</h2>
-      <div class="admin-grid admin-grid-2">
-        ${field('Anasayfa müzik yolu', 'music.homepage.src', content.music.homepage.src)}
-        ${field('Player başlığı', 'music.homepage.title', content.music.homepage.title)}
-      </div>
+      <p class="image-upload-hint">Dosyaları <code>public/images/</code>, <code>public/</code> veya <code>public/videos/</code> altına koyup yolu buraya yaz.</p>
     </section>`;
 }
 
@@ -441,12 +326,12 @@ function renderTheme() {
   const t = content.theme;
   return `
     <section class="admin-panel" data-panel="theme">
-      <h2>Tema renkleri</h2>
+      <h2>Tema</h2>
       <div class="admin-grid admin-grid-2">
-        ${field('Ana arka plan', 'theme.bg', t.bg, 'color')}
-        ${field('Kart arka plan', 'theme.bgSoft', t.bgSoft, 'color')}
-        ${field('Koyu bölüm', 'theme.bgDark', t.bgDark, 'color')}
-        ${field('Vurgu rengi', 'theme.accent', t.accent, 'color')}
+        ${field('Arka plan', 'theme.bg', t.bg, 'color')}
+        ${field('İkincil arka plan', 'theme.bg2', t.bg2, 'color')}
+        ${field('Vurgu (mor)', 'theme.accent', t.accent, 'color')}
+        ${field('Yazı rengi', 'theme.text', t.text, 'color')}
       </div>
     </section>`;
 }
@@ -458,127 +343,72 @@ function renderAdmin() {
       <div class="admin-grid admin-grid-2">
         ${field('Admin şifresi', 'admin.password', content.admin.password)}
       </div>
-      <p style="color:var(--muted);margin:0">Şifreyi değiştirdikten sonra kaydedin. Yeni şifre bir sonraki girişte geçerli olur.</p>
     </section>`;
 }
 
 function renderPanels() {
-  try {
-    panelsEl.innerHTML = [
-      renderGeneral(),
-      renderHero(),
-      renderAbout(),
-      renderWorks(),
-      renderCapabilities(),
-      renderProcess(),
-      renderArchive(),
-      renderCta(),
-      renderFooter(),
-      renderMusic(),
-      renderTheme(),
-      renderAdmin(),
-    ].join('');
-    renderAboutMeta();
-    renderProjects();
-    renderCapabilitiesList();
-    renderProcessList();
-    renderArchiveList();
-    renderFooterColumns();
-  } catch (error) {
-    console.error(error);
-    panelsEl.innerHTML = `<div class="admin-card-block"><h3>Panel yüklenemedi</h3><p>${esc(error.message)}</p></div>`;
-    throw error;
-  }
+  ensureShape();
+  panelsEl.innerHTML = [
+    renderGeneral(),
+    renderHero(),
+    renderAbout(),
+    renderProjectsPanel(),
+    renderBeatsPanel(),
+    renderServicesPanel(),
+    renderContact(),
+    renderMedia(),
+    renderTheme(),
+    renderAdmin(),
+  ].join('');
+  renderProjectsList();
+  renderBeatsList();
+  renderServicesList();
 }
 
 function renderTabs() {
   tabsEl.innerHTML = TABS.map(
-    (tab, i) => `<button type="button" class="admin-tab ${i === 0 ? 'is-active' : ''}" data-tab="${tab.id}">${tab.label}</button>`
+    (tab, i) =>
+      `<button type="button" class="admin-tab ${i === 0 ? 'is-active' : ''}" data-tab="${tab.id}">${tab.label}</button>`
   ).join('');
 }
 
 function switchTab(id) {
   document.querySelectorAll('.admin-tab').forEach((btn) => btn.classList.toggle('is-active', btn.dataset.tab === id));
   document.querySelectorAll('.admin-panel').forEach((panel) => {
-    const active = panel.dataset.panel === id;
-    panel.classList.toggle('is-active', active);
-    if (active) {
-      panel.style.animation = 'none';
-      // force reflow for re-trigger
-      void panel.offsetWidth;
-      panel.style.animation = '';
-    }
+    panel.classList.toggle('is-active', panel.dataset.panel === id);
   });
 }
 
 function readListFields() {
-  document.querySelectorAll('[data-about-meta]').forEach((block) => {
-    const i = Number(block.dataset.aboutMeta);
-    content.about.meta[i] = {
-      label: block.querySelector('[data-about-field="label"]').value,
-      value: block.querySelector('[data-about-field="value"]').value,
-      statusDot: block.querySelector('[data-about-field="statusDot"]').checked,
-    };
-  });
-
   document.querySelectorAll('[data-project]').forEach((block) => {
     const i = Number(block.dataset.project);
-    content.works.projects[i] = {
-      badge: block.querySelector('[data-project-field="badge"]').value,
+    const youtubeId = block.querySelector('[data-project-field="youtubeId"]').value.trim();
+    content.projects[i] = {
+      id: block.querySelector('[data-project-field="id"]').value.trim() || `project-${i + 1}`,
       title: block.querySelector('[data-project-field="title"]').value,
-      type: block.querySelector('[data-project-field="type"]').value,
-      artist: block.querySelector('[data-project-field="artist"]').value,
-      image: block.querySelector('[data-project-field="image"]').value,
-      audio: block.querySelector('[data-project-field="audio"]').value,
-      contour: block.querySelector('[data-project-field="contour"]').value,
-      tags: block.querySelector('[data-project-field="tags"]').value.split(',').map((t) => t.trim()).filter(Boolean),
-      description: block.querySelector('[data-project-field="description"]').value,
+      youtubeId,
+      youtubeUrl: youtubeId ? `https://www.youtube.com/watch?v=${youtubeId}` : '',
+      thumbnail: youtubeId ? `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg` : '',
+      status: block.querySelector('[data-project-field="status"]').value,
+      descriptionTR: content.projects[i]?.descriptionTR || '',
+      descriptionEN: content.projects[i]?.descriptionEN || '',
     };
   });
 
-  document.querySelectorAll('[data-capability]').forEach((block) => {
-    const i = Number(block.dataset.capability);
-    content.capabilities.items[i] = {
-      idx: block.querySelector('[data-cap-field="idx"]').value,
-      title: block.querySelector('[data-cap-field="title"]').value,
-      body: block.querySelector('[data-cap-field="body"]').value,
-      footer: block.querySelector('[data-cap-field="footer"]').value,
+  document.querySelectorAll('[data-beat]').forEach((block) => {
+    const i = Number(block.dataset.beat);
+    content.beats[i] = {
+      id: block.querySelector('[data-beat-field="id"]').value.trim() || `beat-${i + 1}`,
+      number: block.querySelector('[data-beat-field="number"]').value,
+      audio: block.querySelector('[data-beat-field="audio"]').value,
     };
   });
 
-  document.querySelectorAll('[data-step]').forEach((block) => {
-    const i = Number(block.dataset.step);
-    content.process.steps[i] = {
-      num: block.querySelector('[data-step-field="num"]').value,
-      title: block.querySelector('[data-step-field="title"]').value,
-      body: block.querySelector('[data-step-field="body"]').value,
-    };
-  });
-
-  document.querySelectorAll('[data-study]').forEach((block) => {
-    const i = Number(block.dataset.study);
-    content.archive.studies[i] = {
-      pattern: block.querySelector('[data-study-field="pattern"]').value,
-      number: block.querySelector('[data-study-field="number"]').value,
-      tag: block.querySelector('[data-study-field="tag"]').value,
-      image: block.querySelector('[data-study-field="image"]')?.value || '',
-    };
-  });
-
-  document.querySelectorAll('[data-footer-col]').forEach((block) => {
-    const i = Number(block.dataset.footerCol);
-    const links = block
-      .querySelector('[data-footer-col-links]')
-      .value.split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [label, href] = line.split('|');
-        return { label: (label || '').trim(), href: (href || '#').trim() };
-      });
-    content.footer.columns[i] = {
-      title: block.querySelector('[data-footer-col-title]').value,
-      links,
+  document.querySelectorAll('[data-service]').forEach((block) => {
+    const i = Number(block.dataset.service);
+    content.services[i] = {
+      en: block.querySelector('[data-service-field="en"]').value,
+      tr: block.querySelector('[data-service-field="tr"]').value,
     };
   });
 }
@@ -586,126 +416,77 @@ function readListFields() {
 function gatherContentFromForm() {
   readListFields();
   document.querySelectorAll('.admin-panel').forEach((panel) => {
-    const partial = collectPanel(panel);
-    deepMerge(content, partial);
+    deepMerge(content, collectPanel(panel));
   });
-  const marqueeEl = document.querySelector('[data-key="marquee"]');
-  if (marqueeEl) content.marquee = marqueeEl.value.split(',').map((s) => s.trim()).filter(Boolean);
-  const stripEl = document.querySelector('[data-key="indexStrip"]');
-  if (stripEl) content.indexStrip = stripEl.value.split(',').map((s) => s.trim()).filter(Boolean);
+
+  const navRaw = document.querySelector('[data-key="navRaw"]');
+  if (navRaw) {
+    content.nav = navRaw.value
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [labelTR, labelEN, href] = line.split('|').map((s) => (s || '').trim());
+        return { labelTR: labelTR || '', labelEN: labelEN || '', href: href || '#' };
+      });
+    delete content.navRaw;
+  }
+
+  const stemsRaw = document.querySelector('[data-key="stemsRaw"]');
+  if (stemsRaw) {
+    content.stems = stemsRaw.value
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    delete content.stemsRaw;
+  }
+
+  if (content.about?.cutout) content.aboutCutout = content.about.cutout;
+  content.version = 2;
 }
 
 function bindDynamicActions() {
   panelsEl.addEventListener('click', (e) => {
     const t = e.target;
-    if (t.matches('[data-add-about-meta]')) {
-      gatherContentFromForm();
-      content.about.meta.push({ label: 'Yeni', value: '', statusDot: false });
-      renderAboutMeta();
-    }
-    if (t.matches('[data-remove-about-meta]')) {
-      gatherContentFromForm();
-      content.about.meta.splice(Number(t.dataset.removeAboutMeta), 1);
-      renderAboutMeta();
-    }
     if (t.matches('[data-add-project]')) {
       gatherContentFromForm();
-      content.works.projects.push({
-        badge: 'PR',
+      content.projects.push({
+        id: `project-${content.projects.length + 1}`,
         title: 'Yeni Proje',
-        type: 'Single',
-        artist: 'KXRGX',
-        description: '',
-        tags: [],
-        contour: 'contour-ellipses',
-        image: '',
-        audio: '',
+        youtubeId: '',
+        youtubeUrl: '',
+        thumbnail: '',
+        status: 'soon',
+        descriptionTR: '',
+        descriptionEN: '',
       });
-      renderProjects();
+      renderProjectsList();
     }
     if (t.matches('[data-remove-project]')) {
       gatherContentFromForm();
-      content.works.projects.splice(Number(t.dataset.removeProject), 1);
-      renderProjects();
+      content.projects.splice(Number(t.dataset.removeProject), 1);
+      renderProjectsList();
     }
-    if (t.matches('[data-add-capability]')) {
+    if (t.matches('[data-add-beat]')) {
       gatherContentFromForm();
-      content.capabilities.items.push({ idx: '↳ 00', title: 'Yeni', body: '', footer: '' });
-      renderCapabilitiesList();
+      const n = String(content.beats.length + 1).padStart(2, '0');
+      content.beats.push({ id: `beat-${n}`, number: `BEAT ${n}`, audio: `./audio/beat-${n}.mp3` });
+      renderBeatsList();
     }
-    if (t.matches('[data-remove-capability]')) {
+    if (t.matches('[data-remove-beat]')) {
       gatherContentFromForm();
-      content.capabilities.items.splice(Number(t.dataset.removeCapability), 1);
-      renderCapabilitiesList();
+      content.beats.splice(Number(t.dataset.removeBeat), 1);
+      renderBeatsList();
     }
-    if (t.matches('[data-add-step]')) {
+    if (t.matches('[data-add-service]')) {
       gatherContentFromForm();
-      content.process.steps.push({ num: '00', title: 'Yeni', body: '' });
-      renderProcessList();
+      content.services.push({ en: 'NEW SERVICE', tr: 'YENİ HİZMET' });
+      renderServicesList();
     }
-    if (t.matches('[data-remove-step]')) {
+    if (t.matches('[data-remove-service]')) {
       gatherContentFromForm();
-      content.process.steps.splice(Number(t.dataset.removeStep), 1);
-      renderProcessList();
-    }
-    if (t.matches('[data-add-study]')) {
-      gatherContentFromForm();
-      content.archive.studies.push({ pattern: 'lines', number: 'Çalışma #000', tag: 'Etiket', image: '' });
-      renderArchiveList();
-    }
-    if (t.matches('[data-remove-study]')) {
-      gatherContentFromForm();
-      content.archive.studies.splice(Number(t.dataset.removeStudy), 1);
-      renderArchiveList();
-    }
-    if (t.matches('[data-clear-image]')) {
-      gatherContentFromForm();
-      const index = Number(t.dataset.clearIndex);
-      const target = t.dataset.clearImage;
-      if (target === 'data-project-field') {
-        content.works.projects[index].image = '';
-        renderProjects();
-      } else if (target === 'data-study-field') {
-        content.archive.studies[index].image = '';
-        renderArchiveList();
-      }
-    }
-    if (t.matches('[data-add-footer-col]')) {
-      gatherContentFromForm();
-      content.footer.columns.push({ title: 'Yeni', links: [{ label: 'Link', href: '#' }] });
-      renderFooterColumns();
-    }
-    if (t.matches('[data-remove-footer-col]')) {
-      gatherContentFromForm();
-      content.footer.columns.splice(Number(t.dataset.removeFooterCol), 1);
-      renderFooterColumns();
-    }
-  });
-
-  panelsEl.addEventListener('change', async (e) => {
-    const input = e.target.closest('input[type="file"][data-upload-target]');
-    if (!input || !input.files?.[0]) return;
-    const file = input.files[0];
-    const index = Number(input.dataset.uploadIndex);
-    const folder = input.dataset.uploadFolder || 'projects';
-    const target = input.dataset.uploadTarget;
-    showToast('Görsel yükleniyor...');
-    try {
-      gatherContentFromForm();
-      const pathValue = await uploadImageFile(file, folder);
-      if (target === 'data-project-field') {
-        content.works.projects[index].image = pathValue;
-        renderProjects();
-      } else if (target === 'data-study-field') {
-        content.archive.studies[index].image = pathValue;
-        renderArchiveList();
-      }
-      showToast('Görsel eklendi. Kaydetmeyi unutma.');
-    } catch (error) {
-      console.error(error);
-      showToast('Görsel yüklenemedi.');
-    } finally {
-      input.value = '';
+      content.services.splice(Number(t.dataset.removeService), 1);
+      renderServicesList();
     }
   });
 }
@@ -714,8 +495,8 @@ function bindStaticActions() {
   document.getElementById('save-btn').addEventListener('click', async () => {
     gatherContentFromForm();
     const result = await saveContent(content);
-    if (result.persisted) showToast('Kalıcı olarak kaydedildi. Site güncellendi.');
-    else showToast(result.error || 'Kayıt başarısız. Vercel Blob bağlantısını kontrol et.');
+    if (result.persisted) showToast('Kaydedildi. Siteyi yenile.');
+    else showToast(result.error || 'Kayıt başarısız.');
   });
 
   document.getElementById('export-btn').addEventListener('click', () => {
@@ -732,17 +513,19 @@ function bindStaticActions() {
     const file = e.target.files?.[0];
     if (!file) return;
     content = await importContentFile(file);
+    ensureShape();
     renderPanels();
-    showToast('JSON yüklendi. Kaydetmeyi unutmayın.');
+    showToast('JSON yüklendi. Kaydetmeyi unutma.');
     e.target.value = '';
   });
 
   document.getElementById('reset-btn').addEventListener('click', async () => {
-    if (!confirm('Tüm özel değişiklikler silinip varsayılana dönülsün mü?')) return;
+    if (!confirm('Varsayılana dönülsün mü?')) return;
     clearStoredContent();
     content = await fetchDefaultContent();
+    ensureShape();
     renderPanels();
-    showToast('Varsayılan içerik yüklendi.');
+    showToast('Varsayılan yüklendi.');
   });
 
   document.getElementById('logout-btn').addEventListener('click', () => {
@@ -755,6 +538,10 @@ function bindStaticActions() {
 async function bootAdmin() {
   try {
     content = await loadContent();
+    ensureShape();
+    if (content.version !== 2) {
+      showToast('Eski içerik formatı — Sıfırla ile yeni şemaya geçebilirsin.');
+    }
 
     if (!adminReady) {
       renderTabs();
@@ -770,7 +557,7 @@ async function bootAdmin() {
     renderPanels();
   } catch (error) {
     console.error(error);
-    showToast('Panel yüklenemedi. Sayfayı yenileyin.');
+    showToast('Panel yüklenemedi.');
   }
 }
 
@@ -790,7 +577,6 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       err.hidden = false;
       return;
     }
-
     err.hidden = true;
     setAdminAuthed(true, pass);
     showApp();

@@ -75,7 +75,12 @@ export default defineConfig({
           if (req.method !== 'POST') return next();
           try {
             const body = JSON.parse(await readBody(req));
-            const folder = body.folder === 'archive' ? 'archive' : 'projects';
+            const folder =
+              body.folder === 'archive'
+                ? 'archive'
+                : body.folder === 'images'
+                  ? 'images'
+                  : 'projects';
             const ext = path.extname(body.filename || '').toLowerCase() || '.jpg';
             const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
             if (!allowed.includes(ext)) {

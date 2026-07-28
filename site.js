@@ -182,7 +182,13 @@ function applyArchive(archive) {
         const image = s.image
           ? `<img class="study-visual-img" src="${esc(s.image)}" alt="${esc(s.number)}" loading="lazy" />`
           : '';
-        return `<figure data-pattern="${esc(s.pattern || 'lines')}" class="${s.image ? 'has-image' : ''}"><div class="study-visual">${image}</div><figcaption><span>${esc(s.number)}</span><span>${esc(s.tag)}</span></figcaption></figure>`;
+        const playable = Boolean(s.audio);
+        const priceLabel = s.price ? ` · ${esc(s.price)}` : '';
+        const classes = [s.image ? 'has-image' : '', playable ? 'is-playable' : ''].filter(Boolean).join(' ');
+        const audioAttrs = playable
+          ? ` role="button" tabindex="0" data-audio="${esc(s.audio)}" data-title="${esc(s.number)}" aria-label="${esc(s.number)} çal"`
+          : '';
+        return `<figure data-pattern="${esc(s.pattern || 'lines')}" class="${classes}"${audioAttrs}><div class="study-visual">${image}${playable ? '<span class="beat-play" aria-hidden="true"></span>' : ''}</div><figcaption><span>${esc(s.number)}</span><span>${esc(s.tag)}${priceLabel}</span></figcaption></figure>`;
       })
       .join('');
 
@@ -302,6 +308,20 @@ function initMusicPlayer(music) {
     const btn = e.target.closest('[data-audio]');
     if (!btn) return;
     playTrack(btn.dataset.audio, btn.dataset.title);
+  });
+
+  const beatsGrid = document.querySelector('.archive-grid');
+  beatsGrid?.addEventListener('click', (e) => {
+    const card = e.target.closest('figure[data-audio]');
+    if (!card) return;
+    playTrack(card.dataset.audio, card.dataset.title);
+  });
+  beatsGrid?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const card = e.target.closest('figure[data-audio]');
+    if (!card) return;
+    e.preventDefault();
+    playTrack(card.dataset.audio, card.dataset.title);
   });
 
   document.querySelector('.hero-play')?.addEventListener('click', () => {
