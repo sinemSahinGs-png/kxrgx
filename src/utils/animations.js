@@ -15,6 +15,8 @@ export function initAnimations() {
   initCrowFeathers();
   initHeroText();
   initAboutScrollColor();
+  initMobileProjectColor();
+  initMobileBeatGlow();
   initTextSections();
   initServicesReveal();
   initTextShimmer();
@@ -62,6 +64,104 @@ function initAboutScrollColor() {
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update);
   update();
+}
+
+/** Mobile: projects colorize smoothly as they enter the viewport center */
+function initMobileProjectColor() {
+  const cards = [...document.querySelectorAll('.project-card:not(.project-card--soon)')];
+  if (!cards.length) return;
+
+  const mq = window.matchMedia('(max-width: 899px)');
+  let raf = 0;
+
+  function paint() {
+    raf = 0;
+    if (!mq.matches) {
+      cards.forEach((card) => {
+        card.style.removeProperty('--gs');
+        card.classList.remove('is-colored');
+      });
+      return;
+    }
+
+    const vh = window.innerHeight;
+    const focus = vh * 0.42;
+
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const mid = rect.top + rect.height * 0.45;
+      const dist = Math.abs(mid - focus);
+      const range = vh * 0.48;
+      const t = Math.min(1, Math.max(0, 1 - dist / range));
+      // Slow ease: grayscale 1 → 0
+      const eased = t * t * (3 - 2 * t);
+      const gs = 1 - eased;
+      card.style.setProperty('--gs', gs.toFixed(3));
+      card.classList.toggle('is-colored', eased > 0.55);
+    });
+  }
+
+  function requestPaint() {
+    if (raf) return;
+    raf = requestAnimationFrame(paint);
+  }
+
+  window.addEventListener('scroll', requestPaint, { passive: true });
+  window.addEventListener('resize', requestPaint);
+  requestPaint();
+}
+
+/** Mobile: the beat nearest viewport center glows white like desktop hover */
+function initMobileBeatGlow() {
+  const cards = [...document.querySelectorAll('.beat-card')];
+  if (!cards.length) return;
+
+  const mq = window.matchMedia('(max-width: 899px)');
+  let raf = 0;
+  let active = null;
+
+  function paint() {
+    raf = 0;
+    if (!mq.matches) {
+      if (active) {
+        active.classList.remove('is-scroll-lit');
+        active = null;
+      }
+      cards.forEach((c) => c.classList.remove('is-scroll-lit'));
+      return;
+    }
+
+    const vh = window.innerHeight;
+    const focus = vh * 0.48;
+    let best = null;
+    let bestDist = Infinity;
+
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      if (rect.bottom < vh * 0.08 || rect.top > vh * 0.92) return;
+      const mid = rect.top + rect.height * 0.5;
+      const dist = Math.abs(mid - focus);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = card;
+      }
+    });
+
+    if (best !== active) {
+      if (active) active.classList.remove('is-scroll-lit');
+      if (best) best.classList.add('is-scroll-lit');
+      active = best;
+    }
+  }
+
+  function requestPaint() {
+    if (raf) return;
+    raf = requestAnimationFrame(paint);
+  }
+
+  window.addEventListener('scroll', requestPaint, { passive: true });
+  window.addEventListener('resize', requestPaint);
+  requestPaint();
 }
 
 function initTextSections() {

@@ -1105,7 +1105,18 @@ button {
   height: 100%;
   object-fit: cover;
   filter: grayscale(1) contrast(1.1);
-  transition: transform 0.6s ease, filter 0.4s ease;
+  transition: transform 0.6s ease, filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (max-width: 899px) {
+  .project-card__media img {
+    filter: grayscale(var(--gs, 1)) contrast(1.08);
+  }
+
+  .project-card.is-colored .project-play {
+    background: rgba(5, 5, 5, 0.12);
+    opacity: 1;
+  }
 }
 
 .project-play {
@@ -1271,11 +1282,11 @@ button {
   position: relative;
   overflow: hidden;
   transition:
-    background 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.4s ease,
-    box-shadow 0.45s ease,
-    color 0.35s ease,
-    transform 0.35s ease;
+    background 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.55s ease,
+    box-shadow 0.6s ease,
+    color 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .beat-card::before {
@@ -1290,7 +1301,8 @@ button {
 }
 
 .beat-card:hover,
-.beat-card:focus-within {
+.beat-card:focus-within,
+.beat-card.is-scroll-lit {
   background: #ffffff;
   color: #0c0c0e;
   border-color: rgba(255, 255, 255, 0.92);
@@ -1303,53 +1315,64 @@ button {
 }
 
 .beat-card:hover::before,
-.beat-card:focus-within::before {
+.beat-card:focus-within::before,
+.beat-card.is-scroll-lit::before {
   opacity: 1;
 }
 
 .beat-card:hover .beat-card__number,
 .beat-card:hover .beat-card__sale,
 .beat-card:focus-within .beat-card__number,
-.beat-card:focus-within .beat-card__sale {
+.beat-card:focus-within .beat-card__sale,
+.beat-card.is-scroll-lit .beat-card__number,
+.beat-card.is-scroll-lit .beat-card__sale {
   color: #0c0c0e;
 }
 
 .beat-card:hover .beat-player__times,
 .beat-card:hover .beat-soon,
 .beat-card:focus-within .beat-player__times,
-.beat-card:focus-within .beat-soon {
+.beat-card:focus-within .beat-soon,
+.beat-card.is-scroll-lit .beat-player__times,
+.beat-card.is-scroll-lit .beat-soon {
   color: #333338;
 }
 
 .beat-card:hover .en,
-.beat-card:focus-within .en {
+.beat-card:focus-within .en,
+.beat-card.is-scroll-lit .en {
   color: #4a4a52;
 }
 
 .beat-card:hover .beat-play,
-.beat-card:focus-within .beat-play {
+.beat-card:focus-within .beat-play,
+.beat-card.is-scroll-lit .beat-play {
   border-color: #0c0c0e;
   color: #0c0c0e;
 }
 
 .beat-card:hover .beat-play:hover:not(:disabled),
-.beat-card:focus-within .beat-play:hover:not(:disabled) {
+.beat-card:focus-within .beat-play:hover:not(:disabled),
+.beat-card.is-scroll-lit .beat-play:hover:not(:disabled) {
   background: #0c0c0e;
   color: #fff;
 }
 
 .beat-card:hover .beat-progress,
-.beat-card:focus-within .beat-progress {
+.beat-card:focus-within .beat-progress,
+.beat-card.is-scroll-lit .beat-progress {
   background: rgba(0, 0, 0, 0.18);
 }
 
 .beat-card:hover .beat-progress__fill,
-.beat-card:focus-within .beat-progress__fill {
+.beat-card:focus-within .beat-progress__fill,
+.beat-card.is-scroll-lit .beat-progress__fill {
   background: #0c0c0e;
 }
 
 .beat-card:hover .beat-card__cta,
-.beat-card:focus-within .beat-card__cta {
+.beat-card:focus-within .beat-card__cta,
+.beat-card.is-scroll-lit .beat-card__cta {
   background: #0c0c0e;
   color: #fff;
   border-color: #0c0c0e;
