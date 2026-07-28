@@ -298,11 +298,22 @@ function renderProjectsList() {
     .join('');
 }
 
+function audioFileLabel(url) {
+  if (!url) return '';
+  try {
+    const clean = String(url).split('?')[0];
+    const name = clean.split('/').pop() || clean;
+    return decodeURIComponent(name);
+  } catch {
+    return String(url);
+  }
+}
+
 function renderBeatsPanel() {
   return `
     <section class="admin-panel" data-panel="beats">
       <h2>Beat Satışı</h2>
-      <p class="image-upload-hint">MP3 / WAV yükle, ismi düzenle, kaydet — sitede anında yayınlanır.</p>
+      <p class="image-upload-hint">Her beat için <strong>Dosya ekle</strong> ile MP3 yükle — sitede anında güncellenir. Yol yazmana gerek yok.</p>
       <div class="admin-grid admin-grid-2">
         ${field('Stem listesi (virgülle)', 'stemsRaw', (content.stems || []).join(', '))}
         ${field('Beat fiyatı', 'beatPrice', content.beatPrice)}
@@ -318,6 +329,7 @@ function renderBeatsList() {
   wrap.innerHTML = content.beats
     .map((b, i) => {
       const hasAudio = Boolean(b.audio);
+      const fileName = audioFileLabel(b.audio);
       return `
     <div class="admin-card-block" data-beat="${i}">
       <div class="admin-card-head">
@@ -325,28 +337,29 @@ function renderBeatsList() {
         <button type="button" class="btn-ghost" data-remove-beat="${i}">Sil</button>
       </div>
       <div class="admin-grid admin-grid-2">
-        <label>Görünen isim<input data-beat-field="number" value="${esc(b.number)}" placeholder="BEAT 01" /></label>
-        <label>ID<input data-beat-field="id" value="${esc(b.id)}" placeholder="beat-01" /></label>
+        <label style="grid-column:1/-1">Görünen isim<input data-beat-field="number" value="${esc(b.number)}" placeholder="BEAT 01" /></label>
+        <input type="hidden" data-beat-field="id" value="${esc(b.id || '')}" />
       </div>
-      <div class="beat-upload">
-        <div class="beat-upload__meta">
-          <p class="beat-upload__label">Ses dosyası</p>
-          <p class="beat-upload__path" data-beat-path>${esc(b.audio || 'Henüz dosya yok')}</p>
-          <input type="hidden" data-beat-field="audio" value="${esc(b.audio || '')}" />
+      <div class="beat-upload ${hasAudio ? 'has-file' : ''}" data-beat-drop="${i}">
+        <input type="hidden" data-beat-field="audio" value="${esc(b.audio || '')}" />
+        <div class="beat-upload__drop">
+          <p class="beat-upload__title">${hasAudio ? 'MP3 yüklü' : 'MP3 ekle'}</p>
+          <p class="beat-upload__path" data-beat-path>${
+            hasAudio ? esc(fileName) : 'Dosyayı buraya sürükle veya aşağıdaki butona tıkla'
+          }</p>
           ${
             hasAudio
               ? `<audio class="beat-upload__player" controls preload="metadata" src="${esc(b.audio)}"></audio>`
               : ''
           }
+          <div class="beat-upload__actions">
+            <label class="btn-primary image-upload-btn beat-upload__cta">
+              ${hasAudio ? 'MP3 değiştir' : 'Dosya ekle'}
+              <input type="file" accept="audio/mpeg,audio/mp3,audio/*,.mp3,.wav,.m4a" hidden data-beat-file="${i}" />
+            </label>
+          </div>
         </div>
-        <div class="beat-upload__actions">
-          <label class="btn-ghost image-upload-btn">
-            Dosya seç
-            <input type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" hidden data-beat-file="${i}" />
-          </label>
-          ${hasAudio ? `<a class="btn-ghost" href="${esc(b.audio)}" target="_blank" rel="noopener">Aç</a>` : ''}
-        </div>
-        <p class="image-upload-hint">Yükleme bitince otomatik yayınlanır.</p>
+        <p class="image-upload-hint">Yükleme bitince site otomatik güncellenir.</p>
       </div>
     </div>`;
     })
@@ -533,6 +546,31 @@ function gatherContentFromForm() {
   content.version = 2;
 }
 
+async function handleBeatAudioFile(index, file) {
+  if (!file || Number.isNaN(index)) return;
+  gatherContentFromForm();
+  const beat = content.beats[index];
+  if (!beat) return;
+
+  const drop = document.querySelector(`[data-beat-drop="${index}"]`);
+  const label = drop?.querySelector('[data-beat-path]');
+  if (label) label.textContent = `Yükleniyor: ${file.name}…`;
+  drop?.classList.add('is-uploading');
+  showToast('MP3 yükleniyor…');
+
+  try {
+    const url = await uploadAudioFile(file);
+    beat.audio = url;
+    if (!beat.id) beat.id = slugBeatId(beat.number || file.name, index);
+    renderBeatsList();
+    await publishNow(`“${beat.number || 'Beat'}” sitede güncellendi.`);
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || 'Yükleme başarısız.');
+    renderBeatsList();
+  }
+}
+
 function bindDynamicActions() {
   panelsEl.addEventListener('click', async (e) => {
     const t = e.target;
@@ -584,35 +622,37 @@ function bindDynamicActions() {
     if (!input.matches('[data-beat-file]')) return;
     const index = Number(input.dataset.beatFile);
     const file = input.files?.[0];
-    if (!file || Number.isNaN(index)) return;
+    input.value = '';
+    await handleBeatAudioFile(index, file);
+  });
 
-    gatherContentFromForm();
-    const beat = content.beats[index];
-    if (!beat) return;
+  panelsEl.addEventListener('dragover', (e) => {
+    const drop = e.target.closest('[data-beat-drop]');
+    if (!drop) return;
+    e.preventDefault();
+    drop.classList.add('is-dragover');
+  });
 
-    const label = input.closest('.beat-upload')?.querySelector('.beat-upload__path');
-    if (label) label.textContent = `Yükleniyor: ${file.name}…`;
-    showToast('Beat yükleniyor…');
+  panelsEl.addEventListener('dragleave', (e) => {
+    const drop = e.target.closest('[data-beat-drop]');
+    if (!drop) return;
+    if (!drop.contains(e.relatedTarget)) drop.classList.remove('is-dragover');
+  });
 
-    try {
-      const url = await uploadAudioFile(file);
-      beat.audio = url;
-      if (!beat.number || /^BEAT\s*\d+$/i.test(beat.number)) {
-        const stem = file.name.replace(/\.[^.]+$/, '').trim();
-        if (stem) beat.number = stem.toUpperCase();
-      }
-      if (!beat.id || /^beat-\d+$/i.test(beat.id)) {
-        beat.id = slugBeatId(beat.number, index);
-      }
-      renderBeatsList();
-      await publishNow(`“${beat.number}” yayında.`);
-    } catch (error) {
-      console.error(error);
-      showToast(error.message || 'Yükleme başarısız.');
-      renderBeatsList();
-    } finally {
-      input.value = '';
+  panelsEl.addEventListener('drop', async (e) => {
+    const drop = e.target.closest('[data-beat-drop]');
+    if (!drop) return;
+    e.preventDefault();
+    drop.classList.remove('is-dragover');
+    const index = Number(drop.dataset.beatDrop);
+    const file = [...(e.dataTransfer?.files || [])].find((f) =>
+      /audio\//.test(f.type) || /\.(mp3|wav|m4a|aac|ogg|flac)$/i.test(f.name)
+    );
+    if (!file) {
+      showToast('Sadece ses dosyası (MP3 vb.) ekleyebilirsin.');
+      return;
     }
+    await handleBeatAudioFile(index, file);
   });
 }
 
