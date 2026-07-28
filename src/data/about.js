@@ -7,11 +7,7 @@ Farklı türlerde 50'den fazla prodüksiyona imza attım. Analog dokuları moder
 
 Son çalışmalarım arasında AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP ve AGAB — MAGNOLIA 4/1 yer alıyor.
 
-Her prodüksiyon; detaylara verilen önemin, özgünlüğün ve kalıcı etki yaratan müzik üretme arzusunun bir yansımasıdır.
-
-İster sıfırdan yeni bir proje üretelim, ister mevcut bir parçayı profesyonel seviyeye taşıyalım; her projeye yaratıcılık, teknik uzmanlık ve özgün bir sanatsal bakışla yaklaşıyorum.
-
-Birlikte unutulmaz işler üretelim.`,
+İşbirliklerine açığım.`,
 
   en: `I am a music producer and sound designer with more than seven years of experience creating distinctive sonic worlds.
 
@@ -21,11 +17,7 @@ I have produced more than 50 records across multiple genres, combining analog te
 
 Recent projects include AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP, and AGAB — MAGNOLIA 4/1.
 
-Each production reflects meticulous attention to detail, originality, and a commitment to creating music with lasting impact.
-
-Whether you need a new production built from the ground up or want to elevate an existing track, I bring creativity, technical expertise, and a distinct artistic vision to every project.
-
-Let’s create something unforgettable.`,
+Open to collaborations.`,
 };
 
 /** @deprecated use aboutCopy */
