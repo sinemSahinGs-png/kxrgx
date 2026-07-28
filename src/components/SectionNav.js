@@ -21,7 +21,6 @@ export function renderSectionNav() {
         href="${esc(item.href)}"
         data-section="${esc(item.href.slice(1))}"
         aria-label="${esc(item.labelTR)}"
-        title="${esc(item.labelTR)}"
       >
         <span class="section-nav__label">${esc(item.labelTR)}</span>
       </a>`
@@ -44,27 +43,75 @@ export function initSectionNav() {
 
   if (!targets.length) return;
 
-  function setActive(id) {
+  let activeId = '';
+  let labelTimer = 0;
+  let raf = 0;
+
+  function clearLabels() {
+    dots.forEach((dot) => dot.classList.remove('is-label-on'));
+  }
+
+  function flashLabel(dot) {
+    clearLabels();
+    if (!dot) return;
+    dot.classList.add('is-label-on');
+    clearTimeout(labelTimer);
+    labelTimer = window.setTimeout(() => {
+      dot.classList.remove('is-label-on');
+    }, 1400);
+  }
+
+  function setActive(id, { announce = true } = {}) {
+    if (id === activeId) return;
+    activeId = id;
+    let activeDot = null;
     dots.forEach((dot) => {
       const on = dot.dataset.section === id;
       dot.classList.toggle('is-active', on);
-      if (on) dot.setAttribute('aria-current', 'true');
-      else dot.removeAttribute('aria-current');
+      if (on) {
+        activeDot = dot;
+        dot.setAttribute('aria-current', 'true');
+      } else {
+        dot.removeAttribute('aria-current');
+      }
     });
+    if (announce) flashLabel(activeDot);
   }
 
-  const io = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((e) => e.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible[0]) setActive(visible[0].target.id);
-    },
-    { threshold: [0.15, 0.35, 0.55], rootMargin: '-20% 0px -35% 0px' }
-  );
+  function spy() {
+    raf = 0;
+    const vh = window.innerHeight;
+    const focus = vh * 0.38;
+    let best = null;
+    let bestDist = Infinity;
 
-  targets.forEach(({ el }) => io.observe(el));
+    targets.forEach(({ el, id }) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.bottom < vh * 0.1 || rect.top > vh * 0.92) return;
+      const mid = rect.top + Math.min(rect.height, vh) * 0.35;
+      const dist = Math.abs(mid - focus);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = id;
+      }
+    });
 
-  const hero = document.getElementById('hero');
-  if (hero && window.scrollY < 80) setActive('hero');
+    if (best) setActive(best);
+  }
+
+  function requestSpy() {
+    if (raf) return;
+    raf = requestAnimationFrame(spy);
+  }
+
+  window.addEventListener('scroll', requestSpy, { passive: true });
+  window.addEventListener('resize', requestSpy);
+
+  dots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      flashLabel(dot);
+    });
+  });
+
+  spy();
 }

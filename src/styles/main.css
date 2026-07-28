@@ -985,13 +985,13 @@ button {
 @media (max-width: 899px) {
   .section-nav {
     position: fixed;
-    right: 0.55rem;
+    right: 0.45rem;
     top: 50%;
     z-index: 55;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 0.7rem;
+    gap: 0.62rem;
     transform: translateY(-50%);
     pointer-events: none;
   }
@@ -999,59 +999,62 @@ button {
   .section-nav__dot {
     pointer-events: auto;
     position: relative;
-    width: 0.55rem;
-    height: 0.55rem;
+    width: 0.48rem;
+    height: 0.48rem;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    background: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
     transition:
-      transform 0.25s ease,
-      background 0.25s ease,
-      border-color 0.25s ease,
-      box-shadow 0.25s ease;
+      transform 0.28s ease,
+      background 0.28s ease,
+      border-color 0.28s ease,
+      box-shadow 0.28s ease;
   }
 
   .section-nav__dot::before {
     content: '';
     position: absolute;
-    inset: -0.55rem;
+    inset: -0.5rem;
   }
 
   .section-nav__label {
     position: absolute;
-    right: calc(100% + 0.65rem);
+    right: calc(100% + 0.5rem);
     top: 50%;
-    transform: translateY(-50%) translateX(0.35rem);
+    transform: translateY(-50%) translateX(0.25rem);
     white-space: nowrap;
-    padding: 0.28rem 0.55rem;
+    padding: 0.18rem 0.4rem;
     border-radius: 999px;
-    background: rgba(24, 24, 28, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--text);
+    background: rgba(24, 24, 28, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(242, 242, 239, 0.92);
     font-family: var(--mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+    font-size: 0.48rem;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+      opacity 0.35s ease,
+      transform 0.35s ease,
+      visibility 0.35s ease;
   }
 
-  .section-nav__dot:hover .section-nav__label,
-  .section-nav__dot:focus-visible .section-nav__label,
-  .section-nav__dot.is-active .section-nav__label {
+  .section-nav__dot.is-label-on .section-nav__label {
     opacity: 1;
+    visibility: visible;
     transform: translateY(-50%) translateX(0);
   }
 
   .section-nav__dot.is-active {
     background: #fff;
     border-color: #fff;
-    transform: scale(1.35);
+    transform: scale(1.3);
     box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.35),
-      0 0 16px rgba(255, 255, 255, 0.35);
+      0 0 0 1px rgba(255, 255, 255, 0.3),
+      0 0 12px rgba(255, 255, 255, 0.28);
   }
 }
 
@@ -1788,8 +1791,20 @@ button {
   pointer-events: none;
 }
 
-.site-player__icon[hidden] {
-  display: none !important;
+.site-player__icon {
+  display: block;
+}
+
+.site-player__icon--pause {
+  display: none;
+}
+
+.site-player.is-playing .site-player__icon--play {
+  display: none;
+}
+
+.site-player.is-playing .site-player__icon--pause {
+  display: block;
 }
 
 /* —— Footer (fluid portrait background) —— */

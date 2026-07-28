@@ -8,9 +8,9 @@ export function renderRadio() {
   return `
   <div class="site-player" data-radio data-playlist-id="${esc(site.radioPlaylistId)}" aria-label="Playlist">
     <div class="site-player__host" data-radio-host aria-hidden="true"></div>
-    <button type="button" class="site-player__btn" data-radio-toggle aria-label="Play">
+    <button type="button" class="site-player__btn" data-radio-toggle aria-label="Play" aria-pressed="false">
       <svg class="site-player__icon site-player__icon--play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
-      <svg class="site-player__icon site-player__icon--pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
+      <svg class="site-player__icon site-player__icon--pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
     </button>
     <button type="button" class="site-player__btn" data-radio-next aria-label="Next">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 6h2v12h-2V6zM5 18l8.5-6L5 6v12z"/></svg>
@@ -52,19 +52,23 @@ export async function initRadio() {
   const nextBtn = root.querySelector('[data-radio-next]');
   if (!host || !toggleBtn || !nextBtn) return;
 
-  const iconPlay = toggleBtn.querySelector('.site-player__icon--play');
-  const iconPause = toggleBtn.querySelector('.site-player__icon--pause');
   let player = null;
+  let ytRef = null;
 
   function setPlaying(isPlaying) {
-    if (iconPlay) iconPlay.hidden = isPlaying;
-    if (iconPause) iconPause.hidden = !isPlaying;
-    toggleBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
     root.classList.toggle('is-playing', isPlaying);
+    toggleBtn.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    toggleBtn.setAttribute('aria-pressed', String(isPlaying));
+  }
+
+  function isActiveState(state) {
+    if (!ytRef) return false;
+    return state === ytRef.PlayerState.PLAYING || state === ytRef.PlayerState.BUFFERING;
   }
 
   try {
     const YT = await loadYouTubeAPI();
+    ytRef = YT;
     const mountId = 'kxrgx-site-player';
     host.innerHTML = `<div id="${mountId}"></div>`;
     player = new YT.Player(mountId, {
@@ -80,7 +84,7 @@ export async function initRadio() {
       },
       events: {
         onStateChange(e) {
-          setPlaying(e.data === YT.PlayerState.PLAYING);
+          setPlaying(isActiveState(e.data));
         },
         onError() {
           setPlaying(false);
@@ -93,9 +97,16 @@ export async function initRadio() {
   }
 
   toggleBtn.addEventListener('click', () => {
+    if (!player || typeof player.getPlayerState !== 'function') return;
     try {
-      if (root.classList.contains('is-playing')) player.pauseVideo();
-      else player.playVideo();
+      const state = player.getPlayerState();
+      if (isActiveState(state) || root.classList.contains('is-playing')) {
+        player.pauseVideo();
+        setPlaying(false);
+      } else {
+        player.playVideo();
+        setPlaying(true);
+      }
     } catch {
       /* ignore */
     }
@@ -104,6 +115,7 @@ export async function initRadio() {
   nextBtn.addEventListener('click', () => {
     try {
       player.nextVideo();
+      setPlaying(true);
     } catch {
       /* ignore */
     }
