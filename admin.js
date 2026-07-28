@@ -224,6 +224,8 @@ function renderGeneral() {
         ${field('Instagram handle', 'instagramHandle', content.instagramHandle)}
         ${field('Instagram URL', 'instagramUrl', content.instagramUrl)}
         ${field('Instagram DM URL', 'instagramDmUrl', content.instagramDmUrl)}
+        ${field('Spotify URL', 'spotifyUrl', content.spotifyUrl || '')}
+        ${field('Spotify etiketi', 'spotifyLabel', content.spotifyLabel || 'Spotify')}
         ${field('Sayfa başlığı', 'seo.title', content.seo.title)}
         ${field('Meta açıklama', 'seo.description', content.seo.description, 'textarea', 3)}
         ${field('Radyo playlist ID', 'radioPlaylistId', content.radioPlaylistId)}

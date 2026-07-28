@@ -10,6 +10,8 @@ export const site = {
   instagramHandle: '@kxrgx',
   instagramUrl: 'https://www.instagram.com/kxrgx/',
   instagramDmUrl: 'https://ig.me/m/kxrgx',
+  spotifyUrl: 'https://open.spotify.com/intl-tr/artist/1BhDrRu3XqEiu2zkPP2FUc',
+  spotifyLabel: 'Spotify',
   seo: {
     title: 'KXRGX — Music Producer & Sound Designer',
     description:

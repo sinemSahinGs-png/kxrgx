@@ -29,6 +29,8 @@ export function buildDefaultContent() {
     instagramHandle: site.instagramHandle,
     instagramUrl: site.instagramUrl,
     instagramDmUrl: site.instagramDmUrl,
+    spotifyUrl: site.spotifyUrl,
+    spotifyLabel: site.spotifyLabel,
     seo: { ...site.seo },
     portraitTop: site.portraitTop,
     portraitBottom: site.portraitBottom,
@@ -81,6 +83,8 @@ export function applyContent(data) {
   if (data.instagramHandle != null) site.instagramHandle = data.instagramHandle;
   if (data.instagramUrl != null) site.instagramUrl = data.instagramUrl;
   if (data.instagramDmUrl != null) site.instagramDmUrl = data.instagramDmUrl;
+  if (data.spotifyUrl != null) site.spotifyUrl = data.spotifyUrl;
+  if (data.spotifyLabel != null) site.spotifyLabel = data.spotifyLabel;
   if (data.portraitTop != null) {
     site.portraitTop = data.portraitTop;
     site.portrait = data.portraitTop;
