@@ -45,6 +45,7 @@ export function renderFooter() {
             href="${esc(spotifyUrl)}"
             target="_blank"
             rel="noopener noreferrer"
+            lang="en"
             aria-label="${esc(spotifyLabel)} — ${esc(site.brand)}"
             title="${esc(spotifyLabel)}"
           >

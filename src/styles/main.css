@@ -1963,7 +1963,7 @@ button {
   font-family: var(--mono);
   font-size: 0.78rem;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   text-decoration: none;
   color: #fff;
   background: rgba(0, 0, 0, 0.28);
