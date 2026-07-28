@@ -7,11 +7,13 @@ export function json(res, status, data) {
 
 export function readBody(req) {
   return new Promise((resolve, reject) => {
-    let body = '';
+    const chunks = [];
     req.on('data', (chunk) => {
-      body += chunk;
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     });
-    req.on('end', () => resolve(body));
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks).toString('utf8'));
+    });
     req.on('error', reject);
   });
 }
