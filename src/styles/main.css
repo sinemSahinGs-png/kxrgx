@@ -691,11 +691,28 @@ button {
   }
 }
 
-@media (max-width: 768px) {
-  .prose--animated .word.is-lit {
-    color: var(--text);
-    opacity: 1;
-    transform: none;
+@media (max-width: 899px) {
+  [data-about].is-visible .prose--animated .word {
+    animation: none;
+    opacity: calc(0.16 + var(--lit, 0) * 0.84);
+    color: rgba(242, 242, 239, calc(0.28 + var(--lit, 0) * 0.72));
+    transform: translateY(calc((1 - var(--lit, 0)) * 0.35em));
+    filter: brightness(calc(0.45 + var(--lit, 0) * 0.7));
+    text-shadow: 0 0 calc(var(--lit, 0) * 18px) rgba(255, 255, 255, calc(var(--lit, 0) * 0.32));
+    transition:
+      opacity 0.5s ease,
+      color 0.55s ease,
+      transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.55s ease,
+      text-shadow 0.55s ease;
+  }
+
+  [data-about].is-visible .prose--animated .word.is-lit {
+    color: rgba(242, 242, 239, calc(0.28 + var(--lit, 0) * 0.72));
+  }
+
+  [data-about].shimmer-ready .prose-line {
+    animation: none;
   }
 }
 

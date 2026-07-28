@@ -41,29 +41,41 @@ function initAboutScrollColor() {
   if (!about) return;
 
   const words = about.querySelectorAll('.word');
-  const mq = window.matchMedia('(max-width: 768px)');
+  const mq = window.matchMedia('(max-width: 899px)');
+  let raf = 0;
 
-  function update() {
+  function paint() {
+    raf = 0;
     if (!mq.matches) {
-      words.forEach((w) => w.classList.remove('is-lit'));
+      words.forEach((w) => {
+        w.classList.remove('is-lit');
+        w.style.removeProperty('--lit');
+      });
       return;
     }
 
     const vh = window.innerHeight;
-    const zoneStart = vh * 0.92;
-    const zoneEnd = vh * 0.12;
+    const start = vh * 0.9;
+    const end = vh * 0.22;
 
     words.forEach((word) => {
       const top = word.getBoundingClientRect().top;
-      const t = (zoneStart - top) / (zoneStart - zoneEnd);
-      if (t > 0.08) word.classList.add('is-lit');
-      else word.classList.remove('is-lit');
+      let t = (start - top) / (start - end);
+      t = Math.min(1, Math.max(0, t));
+      const lit = t * t * (3 - 2 * t);
+      word.style.setProperty('--lit', lit.toFixed(3));
+      word.classList.toggle('is-lit', lit > 0.12);
     });
   }
 
-  window.addEventListener('scroll', update, { passive: true });
-  window.addEventListener('resize', update);
-  update();
+  function requestPaint() {
+    if (raf) return;
+    raf = requestAnimationFrame(paint);
+  }
+
+  window.addEventListener('scroll', requestPaint, { passive: true });
+  window.addEventListener('resize', requestPaint);
+  requestPaint();
 }
 
 /** Mobile: projects colorize smoothly as they enter the viewport center */
