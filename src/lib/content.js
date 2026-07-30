@@ -37,7 +37,6 @@ export function buildDefaultContent() {
     crowFeather: site.crowFeather,
     aboutCutout: site.aboutCutout,
     heroVideo: site.heroVideo,
-    beatPrice: site.beatPrice,
     radioPlaylistId: site.radioPlaylistId,
     hero: {
       copy: content.heroCopy,
@@ -93,7 +92,6 @@ export function applyContent(data) {
   if (data.crowFeather != null) site.crowFeather = data.crowFeather;
   if (data.aboutCutout != null) site.aboutCutout = data.aboutCutout;
   if (data.heroVideo != null) site.heroVideo = data.heroVideo;
-  if (data.beatPrice != null) site.beatPrice = data.beatPrice;
   if (data.radioPlaylistId != null) site.radioPlaylistId = data.radioPlaylistId;
   if (data.seo) Object.assign(site.seo, data.seo);
 

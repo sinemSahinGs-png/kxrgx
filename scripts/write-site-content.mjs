@@ -21,7 +21,6 @@ const data = {
   crowFeather: site.crowFeather,
   aboutCutout: site.aboutCutout,
   heroVideo: site.heroVideo,
-  beatPrice: site.beatPrice,
   radioPlaylistId: site.radioPlaylistId,
   hero: {
     copy: 'Karanlık atmosferler, özgün prodüksiyonlar.',

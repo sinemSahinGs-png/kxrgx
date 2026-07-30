@@ -318,7 +318,6 @@ function renderBeatsPanel() {
       <p class="image-upload-hint">Her beat için <strong>Dosya ekle</strong> ile MP3 yükle — sitede anında güncellenir. Yol yazmana gerek yok.</p>
       <div class="admin-grid admin-grid-2">
         ${field('Stem listesi (virgülle)', 'stemsRaw', (content.stems || []).join(', '))}
-        ${field('Beat fiyatı', 'beatPrice', content.beatPrice)}
       </div>
       <div id="beats-list"></div>
       <button type="button" class="btn-ghost" data-add-beat>+ Beat ekle</button>

@@ -33,10 +33,9 @@ export function renderBeatStore() {
     <div class="beats-layout">
       <div class="beats-main">
         <div class="beats-pricing" data-text-block>
-          <p class="beats-price text-anim text-anim--glow">${esc(site.beatPrice)}</p>
           <p class="beats-include">
             <span class="en text-hover" lang="en">BEAT + WAV STEMS INCLUDED</span>
-            <span class="tr text-hover">BEAT + WAV STEM DOSYALARI FİYATA DAHİLDİR</span>
+            <span class="tr text-hover">BEAT + WAV STEM DOSYALARI DAHİL</span>
           </p>
           ${deliveryTr.html.replace('class="text-anim', 'class="beats-delivery tr text-anim')}
           ${deliveryEn.html.replace('class="text-anim', 'class="beats-delivery en text-anim')}

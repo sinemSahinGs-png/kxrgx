@@ -27,7 +27,6 @@ export const site = {
   aboutCutout: '/images/about-cutout.png',
   /** ~3s hero background — scrubbed by scroll (file: public/videos/kxrgx-hero.mp4) */
   heroVideo: '/videos/kxrgx-hero.mp4',
-  beatPrice: '$150–$200',
   /** YouTube playlist ID for KXRGX Radio */
   radioPlaylistId: 'PLeA28ojIFtgQ',
 };
