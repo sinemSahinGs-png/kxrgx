@@ -1349,6 +1349,12 @@ button {
   color: #0c0c0e;
 }
 
+.beat-card.is-sold:hover .beat-card__sale,
+.beat-card.is-sold:focus-within .beat-card__sale,
+.beat-card.is-sold.is-scroll-lit .beat-card__sale {
+  color: #e11d48;
+}
+
 .beat-card:hover .beat-player__times,
 .beat-card:hover .beat-soon,
 .beat-card:focus-within .beat-player__times,
