@@ -55,13 +55,13 @@ export function getAdminPassword(content) {
 
 export async function saveContent(content) {
   const password = sessionStorage.getItem(PASS_KEY) || '';
-  const payload = JSON.stringify({ password, content });
+  const payload = JSON.stringify({ password, content, source: 'admin' });
 
   try {
     const res = await fetch(apiUrl('/api/content'), {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         'X-Admin-Password': password,
       },
       body: payload,
@@ -70,7 +70,7 @@ export async function saveContent(content) {
     if (res.ok && data.ok !== false) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
       cachedDefault = cloneData(content);
-      return { saved: true, persisted: true };
+      return { saved: true, persisted: true, beatCount: data.beatCount };
     }
     return {
       saved: false,

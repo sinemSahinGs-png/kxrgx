@@ -1,0 +1,12 @@
+---
+description: Never wipe or overwrite live beat uploads / SOLD flags
+alwaysApply: true
+---
+
+# Protect live beats
+
+- Never overwrite Vercel Blob / live `beats` with local `public/site-content.json` defaults.
+- `scripts/push-content.mjs` must keep live beats locked; do not push seed `./audio/beat-*.mp3` catalogs.
+- Do not run content sync that replaces uploaded (https/blob) beat audio or clears `sold` flags.
+- Admin may edit beats; accidental seed resets must be blocked (API `protectBeats` in `api/content.js`).
+- Prefer merging or patching non-beat fields only when syncing content.

@@ -23,6 +23,48 @@ function looksMojibake(text) {
   return /Ã.|Ä±|ÅŸ|ÄŸ|Ã¼|Ã¶|Ã§|A�|Â/.test(String(text || ''));
 }
 
+function isUploadedAudio(url) {
+  const u = String(url || '');
+  return /^https?:\/\//i.test(u) || u.includes('blob.vercel') || u.includes('vercel-storage');
+}
+
+function isSeedBeatList(beats) {
+  if (!Array.isArray(beats) || !beats.length) return false;
+  return beats.every(
+    (b) => /^\.\/audio\/beat-\d+\.mp3$/i.test(String(b?.audio || '')) && !b?.sold
+  );
+}
+
+function hasProtectedBeats(beats) {
+  return (beats || []).some((b) => isUploadedAudio(b?.audio) || Boolean(b?.sold));
+}
+
+/**
+ * Prevent accidental wipe of uploaded / sold beats (e.g. seed JSON push).
+ * Admin can still edit, rename, replace audio, mark sold, or delete individual beats.
+ */
+function protectBeats(currentBeats = [], incomingBeats, { forceReplaceBeats = false } = {}) {
+  if (forceReplaceBeats) return Array.isArray(incomingBeats) ? incomingBeats : currentBeats;
+  if (!Array.isArray(incomingBeats)) return currentBeats;
+
+  if (hasProtectedBeats(currentBeats) && isSeedBeatList(incomingBeats)) {
+    return currentBeats;
+  }
+
+  if (incomingBeats.length === 0 && hasProtectedBeats(currentBeats)) {
+    return currentBeats;
+  }
+
+  const currentById = new Map(currentBeats.map((b) => [b.id, b]));
+  return incomingBeats.map((beat) => {
+    const prev = currentById.get(beat.id);
+    if (prev && isUploadedAudio(prev.audio) && !isUploadedAudio(beat.audio)) {
+      return { ...beat, audio: prev.audio };
+    }
+    return beat;
+  });
+}
+
 async function loadContent(req) {
   try {
     const fromBlob = await readBlobContent();
@@ -86,8 +128,18 @@ export default async function handler(req, res) {
       if (!next.admin) next.admin = {};
       if (!next.admin.password) next.admin.password = expected;
 
+      next.beats = protectBeats(current.beats || [], incoming.beats, {
+        forceReplaceBeats: parsed.forceReplaceBeats === true,
+      });
+      delete next.beatPrice;
+
       await saveContent(next);
-      return json(res, 200, { ok: true, persisted: true });
+      return json(res, 200, {
+        ok: true,
+        persisted: true,
+        beatsProtected: hasProtectedBeats(next.beats),
+        beatCount: Array.isArray(next.beats) ? next.beats.length : 0,
+      });
     }
 
     return json(res, 405, { ok: false, error: 'Method not allowed' });

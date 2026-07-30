@@ -706,12 +706,12 @@ function bindStaticActions() {
   });
 
   document.getElementById('reset-btn').addEventListener('click', async () => {
-    if (!confirm('Varsayılana dönülsün mü?')) return;
+    if (!confirm('Canlı sitedeki güncel içeriği yeniden yüklensin mi? (Yüklediğin beatler silinmez.)')) return;
     clearStoredContent();
-    content = await fetchDefaultContent();
+    content = await loadContent();
     ensureShape();
     renderPanels();
-    showToast('Varsayılan yüklendi.');
+    showToast('Canlı içerik yüklendi. Beatler korundu.');
   });
 
   document.getElementById('logout-btn').addEventListener('click', () => {
@@ -726,7 +726,7 @@ async function bootAdmin() {
     content = await loadContent();
     ensureShape();
     if (content.version !== 2) {
-      showToast('Eski içerik formatı — Sıfırla ile yeni şemaya geçebilirsin.');
+      showToast('Eski içerik formatı — Yenile ile canlı içeriği tekrar yükleyebilirsin.');
     }
 
     if (!adminReady) {
