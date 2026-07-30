@@ -1425,6 +1425,59 @@ button {
   color: var(--paper);
 }
 
+.beat-card.is-sold .beat-card__sale {
+  color: #e11d48;
+  font-weight: 700;
+}
+
+.beat-card__sold-sticker {
+  position: absolute;
+  top: 1.15rem;
+  right: -1.85rem;
+  z-index: 3;
+  width: 7.5rem;
+  padding: 0.35rem 0;
+  background: #e11d48;
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  transform: rotate(35deg);
+  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.45);
+  pointer-events: none;
+}
+
+.beat-card.is-sold {
+  opacity: 0.94;
+}
+
+.beat-card__cta--sold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid rgba(225, 29, 72, 0.55);
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  cursor: default;
+  user-select: none;
+}
+
+.beat-card.is-sold:hover .beat-card__cta--sold,
+.beat-card.is-sold.is-scroll-lit .beat-card__cta--sold {
+  color: #be123c;
+  border-color: rgba(190, 18, 60, 0.7);
+  background: rgba(225, 29, 72, 0.14);
+  box-shadow: none;
+}
+
 .beat-player {
   display: grid;
   grid-template-columns: auto 1fr;

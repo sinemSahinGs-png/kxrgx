@@ -4,11 +4,13 @@ import { site } from '../config/site.js';
 
 export function beatCardMarkup(beat) {
   const dm = site.instagramDmUrl || site.instagramUrl;
+  const sold = Boolean(beat.sold);
   return `
-  <article class="beat-card" data-beat-id="${esc(beat.id)}">
+  <article class="beat-card${sold ? ' is-sold' : ''}" data-beat-id="${esc(beat.id)}"${sold ? ' data-sold="true"' : ''}>
+    ${sold ? '<span class="beat-card__sold-sticker" lang="en" aria-hidden="true">SOLD</span>' : ''}
     <div class="beat-card__top">
       <p class="beat-card__number">${esc(beat.number)}</p>
-      <p class="beat-card__sale">FOR SALE</p>
+      <p class="beat-card__sale"${sold ? ' lang="en"' : ''}>${sold ? 'SOLD' : 'FOR SALE'}</p>
     </div>
     <div class="beat-player" data-audio-src="${esc(beat.audio)}">
       <button type="button" class="beat-play" aria-label="${esc(beat.number)} play" data-beat-toggle>
@@ -28,7 +30,10 @@ export function beatCardMarkup(beat) {
         <span class="en" lang="en">PREVIEW COMING SOON</span>
       </p>
     </div>
-    <a
+    ${
+      sold
+        ? `<span class="beat-card__cta beat-card__cta--sold" lang="en" aria-label="Sold">SOLD</span>`
+        : `<a
       class="btn btn--glow btn--small beat-card__cta"
       href="${esc(dm)}"
       target="_blank"
@@ -36,7 +41,8 @@ export function beatCardMarkup(beat) {
     >
       <span class="tr">İLETİŞİME GEÇ</span>
       <span class="en" lang="en">GET IN TOUCH</span>
-    </a>
+    </a>`
+    }
   </article>`;
 }
 

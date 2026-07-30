@@ -342,6 +342,11 @@ function renderBeatsList() {
         <label style="grid-column:1/-1">Görünen isim<input data-beat-field="number" value="${esc(b.number)}" placeholder="BEAT 01" /></label>
         <input type="hidden" data-beat-field="id" value="${esc(b.id || '')}" />
       </div>
+      <label class="beat-sold-toggle ${b.sold ? 'is-sold' : ''}">
+        <input type="checkbox" data-beat-field="sold" ${b.sold ? 'checked' : ''} />
+        <span class="beat-sold-toggle__mark" aria-hidden="true"></span>
+        <span class="beat-sold-toggle__text">${b.sold ? 'Satıldı — SOLD' : 'Satış yapıldı olarak işaretle'}</span>
+      </label>
       <div class="beat-upload ${hasAudio ? 'has-file' : ''}" data-beat-drop="${i}">
         <input type="hidden" data-beat-field="audio" value="${esc(b.audio || '')}" />
         <div class="beat-upload__drop">
@@ -504,6 +509,7 @@ function readListFields() {
       id: idInput || slugBeatId(number, i),
       number: number || `BEAT ${String(i + 1).padStart(2, '0')}`,
       audio: block.querySelector('[data-beat-field="audio"]').value.trim(),
+      sold: Boolean(block.querySelector('[data-beat-field="sold"]')?.checked),
     };
   });
 
@@ -598,7 +604,7 @@ function bindDynamicActions() {
     if (t.matches('[data-add-beat]')) {
       gatherContentFromForm();
       const n = String(content.beats.length + 1).padStart(2, '0');
-      content.beats.push({ id: `beat-${n}`, number: `BEAT ${n}`, audio: '' });
+      content.beats.push({ id: `beat-${n}`, number: `BEAT ${n}`, audio: '', sold: false });
       renderBeatsList();
     }
     if (t.matches('[data-remove-beat]')) {
@@ -621,6 +627,17 @@ function bindDynamicActions() {
 
   panelsEl.addEventListener('change', async (e) => {
     const input = e.target;
+    if (input.matches('[data-beat-field="sold"]')) {
+      gatherContentFromForm();
+      const block = input.closest('[data-beat]');
+      const index = Number(block?.dataset.beat);
+      const beat = content.beats[index];
+      renderBeatsList();
+      await publishNow(
+        beat?.sold ? `“${beat.number}” SOLD olarak yayınlandı.` : `“${beat?.number || 'Beat'}” tekrar satışa açıldı.`
+      );
+      return;
+    }
     if (!input.matches('[data-beat-file]')) return;
     const index = Number(input.dataset.beatFile);
     const file = input.files?.[0];
