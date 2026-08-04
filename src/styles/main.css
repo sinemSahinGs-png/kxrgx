@@ -483,7 +483,16 @@ button {
 
 .hero-play.btn--glow {
   pointer-events: auto;
+  margin-top: 0;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin-top: 1.2rem;
+  pointer-events: auto;
 }
 
 @keyframes btn-glow-idle {
@@ -792,11 +801,12 @@ button {
 }
 
 
-/* —— Hero (scroll-scrubbed background video) —— */
+/* —— Hero (autoplay looping background video) —— */
 .hero {
   position: relative;
   width: 100%;
-  height: 375vh;
+  height: 100vh;
+  min-height: 40rem;
   max-width: none;
   margin: 0;
   padding: 0;
@@ -804,9 +814,9 @@ button {
 }
 
 .hero__sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  position: relative;
+  top: auto;
+  height: 100%;
   min-height: 40rem;
   overflow: hidden;
   background: #000;

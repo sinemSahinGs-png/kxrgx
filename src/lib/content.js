@@ -7,9 +7,9 @@ import { aboutCopy } from '../data/about.js';
 /** Runtime site copy — editable via admin / site-content.json */
 export const content = {
   heroCopy: 'Karanlık atmosferler, özgün prodüksiyonlar.',
-  heroCta: 'Projeleri Dinle',
-  contactText: 'Tüm işbirliklerine açığım, hizmetler için iletişime geçebilirsiniz.',
-  contactCta: 'INSTAGRAM DM',
+  heroCta: 'Projeler',
+  contactText: 'Beat, hizmetler için;',
+  contactCta: 'Instagram',
   aboutTitleTR: 'TANITIM',
   aboutTitleEN: 'ABOUT',
 };

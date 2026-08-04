@@ -25,7 +25,7 @@ export const site = {
   crowFeather: '/images/crow-feather.png',
   /** Tanıtım sağ alt — arka plansız PNG: public/images/about-cutout.png */
   aboutCutout: '/images/about-cutout.png',
-  /** ~3s hero background — scrubbed by scroll (file: public/videos/kxrgx-hero.mp4) */
+  /** Hero background video — autoplay loop (file: public/videos/kxrgx-hero.mp4) */
   heroVideo: '/videos/kxrgx-hero.mp4',
   /** YouTube playlist ID for KXRGX Radio */
   radioPlaylistId: 'PLeA28ojIFtgQ',

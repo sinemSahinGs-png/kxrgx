@@ -46,8 +46,8 @@ export function renderProjects() {
   <section class="section projects" id="projects" data-reveal data-text-section>
     <header class="section-head">
       <h2 class="section-title heading-reveal">
-        <span class="tr">SEÇİLİ PROJELER</span>
-        <span class="en" lang="en">SELECTED PROJECTS</span>
+        <span class="tr">PROJELER</span>
+        <span class="en" lang="en">PROJECTS</span>
       </h2>
     </header>
     <div class="projects-grid">

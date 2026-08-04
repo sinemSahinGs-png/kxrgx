@@ -5,7 +5,7 @@ const SECTIONS = [
   { href: '#hero', labelTR: 'Giriş' },
   { href: '#about', labelTR: 'Hakkında' },
   { href: '#projects', labelTR: 'Projeler' },
-  { href: '#beats', labelTR: 'Beat Satışı' },
+  { href: '#beats', labelTR: 'Beatler' },
   { href: '#services', labelTR: 'Hizmetler' },
   { href: '#contact', labelTR: 'İletişim' },
   { href: '#site-footer', labelTR: 'KXRGX' },

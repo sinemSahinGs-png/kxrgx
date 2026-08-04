@@ -24,13 +24,13 @@
   "radioPlaylistId": "PLeA28ojIFtgQ",
   "hero": {
     "copy": "Karanlık atmosferler, özgün prodüksiyonlar.",
-    "cta": "Projeleri Dinle"
+    "cta": "Projeler"
   },
   "about": {
     "titleTR": "TANITIM",
     "titleEN": "ABOUT",
-    "textTR": "7 yılı aşkın deneyime sahip bir müzik prodüktörü ve ses tasarımcısıyım.\n\nMüzik yolculuğum 15 yaşında davul çalarak başladı; underground kulüplerdeki DJ performanslarıyla devam etti ve zamanla tam zamanlı müzik prodüksiyonuna dönüştü.\n\nFarklı türlerde 50'den fazla prodüksiyona imza attım. Analog dokuları modern prodüksiyon teknikleriyle birleştirerek kendime özgü bir ses karakteri oluşturuyorum.\n\nSon çalışmalarım arasında AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP ve AGAB — MAGNOLIA 4/1 yer alıyor.\n\nİşbirliklerine açığım.",
-    "textEN": "I am a music producer and sound designer with more than seven years of experience creating distinctive sonic worlds.\n\nMy journey began at the age of 15 behind the drums, continued through DJ performances in underground clubs, and eventually evolved into full-time music production.\n\nI have produced more than 50 records across multiple genres, combining analog textures with modern production techniques to create a distinctive sonic identity.\n\nRecent projects include AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP, and AGAB — MAGNOLIA 4/1.\n\nOpen to collaborations.",
+    "textTR": "7 yılı aşkın deneyime sahip bir müzik prodüktörü ve ses tasarımcısıyım.\n\nMüzik yolculuğum 15 yaşında davul çalarak başladı; underground kulüplerdeki DJ performanslarıyla devam etti ve zamanla tam zamanlı müzik prodüksiyonuna dönüştü.\n\nFarklı türlerde 50'den fazla prodüksiyona imza attım. Analog dokuları modern prodüksiyon teknikleriyle birleştirerek kendime özgü bir ses karakteri oluşturuyorum.\n\nSon çalışmalarım arasında AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP ve AGAB — MAGNOLIA 4/1 yer alıyor.",
+    "textEN": "I am a music producer and sound designer with more than seven years of experience creating distinctive sonic worlds.\n\nMy journey began at the age of 15 behind the drums, continued through DJ performances in underground clubs, and eventually evolved into full-time music production.\n\nI have produced more than 50 records across multiple genres, combining analog textures with modern production techniques to create a distinctive sonic identity.\n\nRecent projects include AGAB — INTERLUDE 87, Gökhan Türkmen — Remake EP, and AGAB — MAGNOLIA 4/1.",
     "cutout": "/images/about-cutout.png"
   },
   "nav": [
@@ -250,8 +250,8 @@
     }
   ],
   "contact": {
-    "textTR": "Tüm işbirliklerine açığım, hizmetler için iletişime geçebilirsiniz.",
-    "cta": "INSTAGRAM DM"
+    "textTR": "Beat, hizmetler için;",
+    "cta": "Instagram"
   },
   "theme": {
     "bg": "#18181c",

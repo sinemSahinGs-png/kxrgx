@@ -1,97 +1,24 @@
 /**
- * Scroll-scrubbed hero background video.
- * Progress through the tall hero section maps to video.currentTime (no autoplay / no loop).
+ * Hero background video — autoplay + loop (no scroll scrub).
  */
 
-const FALLBACK_DURATION = 3;
-
 export function initHeroScrollVideo() {
-  const section = document.querySelector('.hero');
   const video = document.querySelector('.hero-video');
-  if (!section || !video) return;
+  if (!video) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let duration = FALLBACK_DURATION;
-  let targetTime = 0;
-  let ready = false;
-  let pendingSeek = true;
-  let raf = 0;
-
-  function getProgress() {
-    const sectionHeight = section.offsetHeight;
-    const viewport = window.innerHeight || 1;
-    const travel = Math.max(1, sectionHeight - viewport);
-    const sectionRect = section.getBoundingClientRect();
-    return Math.min(1, Math.max(0, -sectionRect.top / travel));
-  }
-
-  function syncTarget() {
-    const progress = getProgress();
-    const next = progress * duration;
-    if (Math.abs(next - targetTime) > 0.001) {
-      targetTime = next;
-      pendingSeek = true;
-    }
-  }
-
-  function applySeek() {
-    if (!ready || !pendingSeek || video.seeking) return;
-    pendingSeek = false;
-    const clamped = Math.min(Math.max(targetTime, 0), Math.max(duration - 0.05, 0));
-    try {
-      if (Math.abs(video.currentTime - clamped) > 0.02) {
-        video.currentTime = clamped;
-      }
-    } catch {
-      pendingSeek = true;
-    }
-  }
-
-  function tick() {
-    applySeek();
-    raf = requestAnimationFrame(tick);
-  }
-
-  video.pause();
-  video.loop = false;
   video.muted = true;
   video.defaultMuted = true;
   video.playsInline = true;
-  video.removeAttribute('poster');
-  video.removeAttribute('autoplay');
-
-  async function unlockFirstFrame() {
-    try {
-      const p = video.play();
-      if (p && typeof p.then === 'function') await p;
-      video.pause();
-    } catch {
-      /* ignore */
-    }
-  }
-
-  function onReady() {
-    if (video.duration && Number.isFinite(video.duration) && video.duration > 0) {
-      duration = video.duration;
-    }
-    ready = true;
-    syncTarget();
-    pendingSeek = true;
-    unlockFirstFrame().then(() => {
-      pendingSeek = true;
-      applySeek();
-    });
-  }
-
-  video.addEventListener('loadedmetadata', onReady, { once: true });
-  video.addEventListener('error', () => {
-    console.warn('[hero] video failed:', video.currentSrc || video.src, video.error);
-  });
-
-  if (video.readyState >= 1) onReady();
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
 
   if (reduceMotion) {
+    video.loop = false;
+    video.removeAttribute('autoplay');
+    video.pause();
     video.addEventListener(
       'loadedmetadata',
       () => {
@@ -106,14 +33,34 @@ export function initHeroScrollVideo() {
     return;
   }
 
-  syncTarget();
-  window.addEventListener('scroll', syncTarget, { passive: true });
-  window.addEventListener('resize', syncTarget, { passive: true });
-  raf = requestAnimationFrame(tick);
+  video.loop = true;
+  video.setAttribute('loop', '');
+  video.setAttribute('autoplay', '');
 
-  return () => {
-    cancelAnimationFrame(raf);
-    window.removeEventListener('scroll', syncTarget);
-    window.removeEventListener('resize', syncTarget);
+  async function tryPlay() {
+    try {
+      const p = video.play();
+      if (p && typeof p.then === 'function') await p;
+    } catch {
+      /* autoplay may be blocked until gesture */
+    }
+  }
+
+  video.addEventListener('loadedmetadata', tryPlay, { once: true });
+  video.addEventListener('canplay', tryPlay, { once: true });
+  if (video.readyState >= 2) tryPlay();
+
+  const unlock = () => {
+    tryPlay();
+    window.removeEventListener('pointerdown', unlock);
+    window.removeEventListener('touchstart', unlock);
+    window.removeEventListener('keydown', unlock);
   };
+  window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+  window.addEventListener('touchstart', unlock, { once: true, passive: true });
+  window.addEventListener('keydown', unlock, { once: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) tryPlay();
+  });
 }

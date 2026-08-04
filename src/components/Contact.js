@@ -14,8 +14,8 @@ export function renderContact() {
       <p class="contact__lead tr">Yeni bir prodüksiyon, sound design projesi veya beat lisansı için iletişime geç.</p>
       <p class="contact__lead en">Get in touch for a new production, sound design project, or beat license.</p>
       <div class="contact__actions">
-        <a class="btn btn--primary" href="${esc(site.instagramDmUrl || site.instagramUrl)}" target="_blank" rel="noopener noreferrer">
-          ${esc(site.instagramHandle)}
+        <a class="btn btn--primary" href="${esc(site.instagramUrl)}" target="_blank" rel="noopener noreferrer">
+          Instagram
         </a>
         <a class="btn btn--ghost" href="mailto:${esc(site.email)}">
           ${esc(site.email)}

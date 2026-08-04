@@ -25,8 +25,8 @@ export function renderBeatStore() {
   <section class="section beats" id="beats" data-reveal data-text-section>
     <header class="section-head">
       <h2 class="section-title heading-reveal">
-        <span class="tr">BEAT SATIŞI</span>
-        <span class="en" lang="en">BEATS FOR SALE</span>
+        <span class="tr">BEAT'LER</span>
+        <span class="en" lang="en">BEATS</span>
       </h2>
     </header>
 
@@ -62,11 +62,11 @@ export function renderBeatStore() {
           ${contactLead.html.replace('class="text-anim', 'class="tr text-anim')}
           <a
             class="btn btn--glow btn--instagram"
-            href="${esc(site.instagramDmUrl)}"
+            href="${esc(site.instagramUrl)}"
             target="_blank"
             rel="noopener noreferrer"
             lang="en"
-          >${esc(content.contactCta || 'INSTAGRAM DM')}</a>
+          >${esc(content.contactCta || 'Instagram')}</a>
         </div>
       </div>
 
