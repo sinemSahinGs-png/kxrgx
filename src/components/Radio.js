@@ -6,8 +6,9 @@ export function renderRadio() {
   if (!site.radioPlaylistId) return '';
 
   return `
-  <div class="site-player" data-radio data-playlist-id="${esc(site.radioPlaylistId)}" aria-label="Playlist">
+  <div class="site-player" data-radio data-playlist-id="${esc(site.radioPlaylistId)}" aria-label="KXRGX Radio">
     <div class="site-player__host" data-radio-host aria-hidden="true"></div>
+    <p class="site-player__label" lang="en">KXRGX RADIO</p>
     <button type="button" class="site-player__btn" data-radio-toggle aria-label="Play" aria-pressed="false">
       <svg class="site-player__icon site-player__icon--play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5z"/></svg>
       <svg class="site-player__icon site-player__icon--pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"/></svg>
